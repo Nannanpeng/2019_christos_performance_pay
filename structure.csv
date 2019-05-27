@@ -1,0 +1,14 @@
+"name","number","dimension_size","type","type_code","space","space_code","group","probability_group","scale","position_in_group","position_in_state_space","position_in_sequence_of_numeric_variables_in_group","distribution_type","offset","multiplier"
+"age ",0,31,"ordinal",0,"time",1,0,-1,1,0,-1,-1,-1,0,1
+"job",1,9,"ordinal",0,"state",1,0,-1,1,1,0,-1,-1,0,1
+"pp",2,2,"ordinal",0,"state",1,0,-1,1,2,1,-1,-1,0,1
+"starting_new_job",3,2,"ordinal",0,"state",1,0,-1,1,3,2,-1,-1,0,1
+"assets",4,10,"numeric",1,"state",1,0,-1,1,4,3,0,0,0,10.0894961567672
+"wage",5,10,"numeric",1,"state",1,0,-1,1,5,4,1,1,2.96221380350849,0.000796466904086163
+"Z",6,10,"numeric",1,"state",1,1,-1,1,0,5,0,1,-1.2815515655446,5.50521765073462e-05
+"frac_savings",7,10,"numeric",1,"decision",2,0,-1,1,6,-1,2,0,0,7.02454917770915e-06
+"hours",8,10,"numeric",1,"decision",2,0,-1,1,7,-1,3,1,1459.94571578016,0.0324080399921915
+"job_applied_to",9,9,"ordinal",0,"decision",2,-1,-1,1,-1,-1,-1,-1,0,1
+"job_change",10,2,"ordinal",0,"exogenous",3,-1,0,1,-1,-1,-1,-1,0,1
+"newpp",11,2,"ordinal",0,"exogenous",3,-1,1,1,-1,-1,-1,-1,0,1
+"newZ",12,10,"numeric",1,"exogenous",3,2,2,1,0,-1,0,1,-1.2815515655446,5.50521765073462e-05
