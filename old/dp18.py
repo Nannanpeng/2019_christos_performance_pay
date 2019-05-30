@@ -15,7 +15,7 @@ import scipy.interpolate
 
 @cuda.jit(device=True)
 def from_flat_index_binary(num_dims,flat_index,rslt):
-    #Given the index into a flat array and the shape of the array, return the indices corresponding to 
+    #Given the index into a flat array and the shape of the array, return the indices corresponding to
     #that that element in the flat array if it were shaped according to myshape
     dim_product=1
     for i in range(1,num_dims):
@@ -30,7 +30,7 @@ def from_flat_index_binary(num_dims,flat_index,rslt):
 
 
 def from_flat_index_binary_cpu(num_dims,flat_index):
-    #Given the index into a flat array and the shape of the array, return the indices corresponding to 
+    #Given the index into a flat array and the shape of the array, return the indices corresponding to
     #that that element in the flat array if it were shaped according to myshape
     rslt=numpy.zeros(num_dims,dtype="uint8")
     dim_product=1
@@ -63,7 +63,7 @@ def from_flat_index(myshape,flat_index,result):
 
 @cuda.jit("uint8[:](uint64[:],uint64,uint8[:])",device=True)
 def from_flat_index_quick(reverse_shape_prod,flat_index,result):
-    #Given the index into a flat array and the reverse cumulative product of the shape of the array, 
+    #Given the index into a flat array and the reverse cumulative product of the shape of the array,
     #return the indices corresponding to
     # that element in the flat array if it were shaped according to the corresponding shape
     for i in range(len(reverse_shape_prod)):
@@ -115,7 +115,7 @@ def to_flat_index_groups(group_shapes,group,indices):
 
 
 
-    
+
 @cuda.jit(device=True)
 def myinsert(vector,length,value):
         #This is like bisect.bisect_left()
@@ -155,7 +155,7 @@ def myinsert(vector,length,value):
 def create_grid(myshape,result,indices):
     i,j,k=cuda.grid(3)
     index= i<<16 | j<<6 | k
-    
+
     if index<result.shape[0]:
         rslt=numba.cuda.local.array((100), numba.uint16)
         rslt=from_flat_index(myshape,index,rslt)
@@ -188,7 +188,7 @@ def thread_indices_to_coordinates(indices,flat_group_data,group_offsets,\
                 #result[variable]=scale[variable]*float(var_value)
                 result[variable]=flat_group_data[int(flat_index)]
 
-        return result    
+        return result
 
 
 
@@ -213,7 +213,7 @@ def exogenous_indices_to_coordinates(indices,flat_group_data,group_offsets,group
                 flat_index=group_offsets[group]+to_flat_index_groups(group_shapes,group,group_indices)
                 var_value=flat_group_data[int(flat_index)]
                 result[variable]=var_value
-        return result    
+        return result
 
 
 @cuda.jit(device=True)
@@ -263,7 +263,7 @@ def project_coordinates(coordinates,flat_group_data,group_offsets,group_lengths,
                    result[position_in_state_space]=coord_index
         return result
 
-                    
+
 @cuda.jit(device=True)
 def get_probability(flat_prob_data,flat_prob_offsets,prob_lengths,prob_shapes,prob_structure,structure,indices):
         group_coordinates=numba.cuda.local.array((10,10), numba.uint8)
@@ -326,10 +326,10 @@ def get_exogenous_probabilities(flat_cum_prob_data,flat_prob_offsets,prob_length
 #                else:
 #                    rslt[i,j]=intpart
 #    return neighbor_variations.shape[0]
- 
-          
 
-    
+
+
+
 
 
 @cuda.jit(device=True)
@@ -352,7 +352,7 @@ def interpolate(neighbors,neighbor_values,point):
         for j in range(neighbors.shape[1]):
             prob=prob*(1-abs(point[j]-neighbors[i,j]))
         estimate=estimate+neighbor_values[i]*prob
-    return estimate    
+    return estimate
 
 
 
@@ -396,7 +396,7 @@ def insert_along_dimension(flat_array,shape,indices,dimension,value):
             if right-left<=1:
                return right
             if right-left>1:
-               return int( (left+right)/2) 
+               return int( (left+right)/2)
 
 
 
@@ -465,7 +465,7 @@ def mc_simulate(initial_dist,transition_matrix,num_sims, num_transitions):
     seeds=numpy.random.randint(0,2**31,num_sims)
     mc_simulate_gpu[(128, 128, 8), (16, 8, 8)](initial_dist,flat_matrix,seeds,num_states,result)
     return result
-    
+
 #************************************************************************************
 
 
@@ -475,10 +475,10 @@ def mc_simulate_gpu(initial_dist,flat_matrix,seeds,num_states,result):
 
     i,j,k=cuda.grid(3)
     index= i<<16 | j<<6 | k
-    
+
     if index<result.shape[0]:
         #sample initial state
-        
+
 
         #get random number seed and run random algorithm once to get random float
         seed=seeds[index]
@@ -487,7 +487,7 @@ def mc_simulate_gpu(initial_dist,flat_matrix,seeds,num_states,result):
         rand_int=cuda_rand_int(rand_int)
         rand_float=float(float(MAX32 & rand_int[0]) / float(MAX32))
 
-        
+
         #Find where random float would insert into cumulative prob initial_dist
         #That is initial state
         flat_array=initial_dist
@@ -498,9 +498,9 @@ def mc_simulate_gpu(initial_dist,flat_matrix,seeds,num_states,result):
         value=rand_float
         state=insert_along_dimension(flat_array,shape,indices,dimension,value)
         result[index,0]=state
-        
-        
-        #setup for finding where random values insert into the transition prob matrix 
+
+
+        #setup for finding where random values insert into the transition prob matrix
         #TPM data is flat in flat_array and shape of it is in shape
         #dimension=1 becuase that is the dimension were searching/inserting along
         #state is the value of the first dimension becuase that is the row of the TPM we need to insert along
@@ -512,7 +512,7 @@ def mc_simulate_gpu(initial_dist,flat_matrix,seeds,num_states,result):
         indices[1]=state
         dimension=1
 
-        
+
         #simulate rest of markov chain. Each time we set the first index to the current state (row of TPM)
         #and search/insert along dimension 1 (columns of TPM)
         for i in range(1,result.shape[1]):
@@ -542,7 +542,7 @@ def update_state(batch,threads_per_batch,int_result,frac_result,prob_result,
 
 
 
-    index=numba.uint32(cuda.grid(1)) 
+    index=numba.uint32(cuda.grid(1))
     #i,j,k=cuda.grid(3)
     #index= i<<20 | j<<10 | k
     if index<threads_per_batch:
@@ -559,15 +559,15 @@ def update_state(batch,threads_per_batch,int_result,frac_result,prob_result,
         indices[0]=0
         for i in range(len(thread_indices)):
             indices[1+i]=thread_indices[i]
-        indices=indices[:structure.shape[0]]        
+        indices=indices[:structure.shape[0]]
 
 
         #convert time+thread indices to time+thread_coordinates
-        #i.e by converting numeric variables from their ordinal indexes to int16 scaled versions of their numeric values 
+        #i.e by converting numeric variables from their ordinal indexes to int16 scaled versions of their numeric values
         rslt1=numba.cuda.local.array((20), numba.uint16)
         int16_coordinates=thread_indices_to_coordinates(indices,flat_group_data,group_offsets,group_lengths,group_shapes,
                                                            structure,scale,0,rslt1)
-        
+
 
         #apply offsets and multipliers to convert int16 versions of coordinates to actual float values
         indices=indices[:structure.shape[0]]
@@ -589,10 +589,10 @@ def update_state(batch,threads_per_batch,int_result,frac_result,prob_result,
             #Here's where we call the function to update the coordinates to what they should be in the next time step
             new_coordinates=numba.cuda.local.array((20), numba.float64)
             new_coordinates=update_state_space(coordinates,new_coordinates,parameters,constants)
-            
+
             #temporary just for testing
             #new_coordinates=coordinates
-        
+
             #project coordinates onto discrete state space and get indices
             newindex=numba.cuda.local.array((20), numba.float64)
             for i in range(state_space_length):
@@ -603,7 +603,7 @@ def update_state(batch,threads_per_batch,int_result,frac_result,prob_result,
                     #if distribution_type==0:
                     #    lookup=int(new_coordinates[i]/multiplier[i])
                     #else:
-                    lookup=int( (new_coordinates[i]-offset[i])/multiplier[i] )        
+                    lookup=int( (new_coordinates[i]-offset[i])/multiplier[i] )
                     if lookup<0:
                         lookup=0
                     if lookup>65535:
@@ -619,8 +619,8 @@ def update_state(batch,threads_per_batch,int_result,frac_result,prob_result,
             state_space_indices=newindex[:state_space_length]
 
 
-            #state_space_index=to_flat_index(state_space_shape,state_space_indices)      
-            #rslt2=numba.cuda.local.array((20), numba.uint8)      
+            #state_space_index=to_flat_index(state_space_shape,state_space_indices)
+            #rslt2=numba.cuda.local.array((20), numba.uint8)
             #new_state_space_indices=from_flat_index_quick(state_space_shape_reverse_prod,state_space_index,rslt2)[:len(state_space_shape)]
 
             for i in range(1,7):
@@ -630,13 +630,13 @@ def update_state(batch,threads_per_batch,int_result,frac_result,prob_result,
             for i in range(1,state_space_length):
                 type_code=structure[i,6]
                 int_result[index,i-1]=int(state_space_indices[i])#int(new_state_space_indices[i-1])
-                
- 
+
+
                 if type_code==1:
                     frac_result[index,frac_index]=int((state_space_indices[i]-int(state_space_indices[i]))*255)
                                              #int((new_state_space_indices[i]-int(new_state_space_indices[i]))*255)
                     frac_index=frac_index+1
-                     
+
 
             #Get probability for this exogenous space point
             prob=get_probability(flat_prob_data,flat_prob_offsets,prob_lengths,prob_shapes,prob_structure,structure,indices)
@@ -653,7 +653,7 @@ def evaluate_decisions(time_step,batch,constants,
                        neighbor_variations,structure,state_space_shape,flat_recursion_data,exogenous_size,utility,
                        sum_expectation,gpu_result,mycount
                        ):
-            
+
             index=cuda.grid(1)
             #Get state space indices
             state_space_indices=numba.cuda.local.array((20), numba.float32)
@@ -667,8 +667,8 @@ def evaluate_decisions(time_step,batch,constants,
                     state_space_indices[i]=state_space_indices[i]+float(state_frac_batch[index,frac_index])/255
                     frac_index=frac_index+1
             state_space_indices=state_space_indices[:state_space_length]
-            prob=numba.float32(float(prob_batch[index])/65536)            
-         
+            prob=numba.float32(float(prob_batch[index])/65536)
+
 
             #Get neighbors in state space
             rslt5=numba.cuda.local.array((16,20), numba.uint8)
@@ -687,12 +687,12 @@ def evaluate_decisions(time_step,batch,constants,
 
             #Get interpolated value from neighboring points
             interp_val=interpolate(neighbors,neighbor_values,state_space_indices)
-    
+
             #accumulate expectations
             state_decision_index=int(index/exogenous_size)
             numba.cuda.atomic.add(expectations_batch,state_decision_index,prob*interp_val)
             numba.cuda.syncthreads()
-            
+
 
             #accumulate sums of exponentials for Emax calculation
             thread_in_block= index % exogenous_size
@@ -701,7 +701,7 @@ def evaluate_decisions(time_step,batch,constants,
                 val=expectations_batch[state_decision_index]
                 beta=constants[4]
                 util=utility[state_numeric_decision_index]
-                expectations_batch[state_decision_index]=util+beta*val            
+                expectations_batch[state_decision_index]=util+beta*val
                 numba.cuda.atomic.add(sum_expectation,state_numeric_decision_index,val)
                 numba.cuda.atomic.add(mycount,state_numeric_decision_index,1)
                 numba.cuda.syncthreads()
@@ -716,13 +716,13 @@ def evaluate_decisions(time_step,batch,constants,
                                           expval)
                 numba.cuda.syncthreads()
                 sumexpval=values_by_numeric_decision_batch[state_numeric_decision_index]
-    
+
                 #calculate utility(time_step)+beta*Value(time_step+1)
                 if ( index % (exogenous_size*num_int_decisions) )==0:
                     logval=math.log(sumexpval)+avgval
                     value=beta*logval+util
                     values_by_numeric_decision_batch[state_numeric_decision_index]=value
-        
+
 
 
 
@@ -741,12 +741,12 @@ def forward_sim_get_max(max_exp,states,best_value,gpu_shape,state_decision_shape
         numeric_decision_index=j
         int_decision_index=k
         num_int_decisions=len(int_decision_reverse_prod)+1
-    
+
         #shared array for Gumbell Variates... should be the same for each thread
         gumbel_value=numba.cuda.shared.array(20,numba.float32)
-    
-    
-    
+
+
+
         #determine values of decision variables this thread looks after
         numeric_decision_indices=numba.cuda.local.array(5,numba.uint8)[:len(numeric_decision_reverse_prod)+1]
 
@@ -795,9 +795,9 @@ def forward_sim_get_decision(time_step,states,best_value,gpu_shape,state_decisio
              numba.cuda.atomic.max(argmax,instance,little_index)
          numba.cuda.syncthreads()
          if little_index==argmax[instance]: #ie this thread has the best decision
-             
+
              state=states[instance,:]
-             
+
 
 
              #determine values of decision variables this thread looks after
@@ -828,14 +828,14 @@ def forward_sim_get_decision(time_step,states,best_value,gpu_shape,state_decisio
 def forward_sim_get_exogenous(states,exogenous_shape_reverse_prod,space_code,rand_floats,
                                 flat_cum_prob_data,flat_prob_offsets,prob_lengths,prob_shapes,prob_structure,
                                 structure,exogenous):
-    
+
     i,j=cuda.grid(2)
     instance=i
     exogenous_index=j
 
     num_exogenous_vars=len(exogenous_shape_reverse_prod)+1
-        
-        
+
+
     #fill in exogenous vars for this thread
     exogenous_indices=numba.cuda.local.array(10,numba.uint8)
     from_flat_index_quick(exogenous_shape_reverse_prod,exogenous_index,exogenous_indices)
@@ -847,7 +847,7 @@ def forward_sim_get_exogenous(states,exogenous_shape_reverse_prod,space_code,ran
         else:
             indices[i]=exogenous_indices[exogenous_done]
             exogenous_done+=1
-    
+
     #replace the exogenous variables with the corresponding cumulative probability for this thread
     cumprobs=numba.cuda.local.array(10,numba.float64)
     get_exogenous_probabilities(flat_cum_prob_data,flat_prob_offsets,prob_lengths,prob_shapes,prob_structure,structure,indices,cumprobs)
@@ -858,16 +858,16 @@ def forward_sim_get_exogenous(states,exogenous_shape_reverse_prod,space_code,ran
     for i in range(num_exogenous_vars):#range(num_exogenous_vars):
         if cumprobs[i]<rand_floats[instance,i]:
             numba.cuda.atomic.max(exogenous,(instance,i),exogenous_indices[i]+1)
-    numba.cuda.syncthreads()        
+    numba.cuda.syncthreads()
 
     if exogenous_index==0:
         exogenous_done=0
         for i in range(structure.shape[0]):
             if space_code[i]==3:
                 states[instance,i]=exogenous[instance,exogenous_done]
-                exogenous_done+=1             
-     
-             
+                exogenous_done+=1
+
+
 @cuda.jit()
 def forward_sim_update_state(states,flat_group_data,group_offsets,group_lengths,group_shapes,
                                                            structure,scale,time_step,offset,multiplier,constants,parameters,
@@ -899,7 +899,7 @@ def forward_sim_update_state(states,flat_group_data,group_offsets,group_lengths,
         #Here's where we call the function to update the coordinates to what they should be in the next time step
         new_coordinates=numba.cuda.local.array((20), numba.float64)
         new_coordinates=update_state_space(coordinates,new_coordinates,parameters,constants)
-        
+
 
         #project coordinates onto discrete state space and get indices
         newindex=numba.cuda.local.array((20), numba.float64)
@@ -926,25 +926,25 @@ def forward_sim_update_state(states,flat_group_data,group_offsets,group_lengths,
             states[instance,i]=state_space_indices[i]
 
 
-        
+
 @cuda.jit()
 def mytest(result):
     i,j,k=cuda.grid(3)
     x=numba.cuda.shared.array(9,numba.int32)
     if j==0 and k==0:
         for p in range(9):
-            x[p]=p    
-    #numba.cuda.atomic.max(result,0,i)        
-    #numba.cuda.atomic.max(result,1,j)        
+            x[p]=p
+    #numba.cuda.atomic.max(result,0,i)
+    #numba.cuda.atomic.max(result,1,j)
     #numba.cuda.atomic.max(result,2,k)
     numba.cuda.syncthreads()
     result[i,j,k]=x[k]
 
 result=numpy.zeros((1000,100,9))
 mytest[(1000,1,1),(1,100,9)](result)
-            
 
-    
+
+
 
 
 
@@ -961,7 +961,7 @@ mytest[(1000,1,1),(1,100,9)](result)
 def get_utility(constants,parameters,structure,offset,multiplier,flat_grid_data):
      consumption_utility_multiplier=parameters[18]
      labor_disutility=parameters[0]
-     
+
      labor_elasticity=parameters[1]
      intertemp_elasticity=constants[1]
      max_hours_per_year=constants[0]
@@ -972,7 +972,7 @@ def get_utility(constants,parameters,structure,offset,multiplier,flat_grid_data)
      data=flat_grid_data[:numpy.prod(group_shape)].reshape(group_shape)
      wage=offset[5]+multiplier[5]*data[0,0,0,0,:,:,:,:,1].astype("float64")
      frac_savings=offset[7]+multiplier[7]*data[0,0,0,0,:,:,:,:,2].astype("float64")
-     
+
      #just temporarily
      #frac_savings[:]=0
      #wage[:]=20
@@ -988,7 +988,7 @@ def get_utility(constants,parameters,structure,offset,multiplier,flat_grid_data)
 #                   -labor_disutility*(hours/max_hours_per_year)**(1+labor_elasticity)/(1+labor_elasticity)
 
      hours=offset[8]+multiplier[8]*data[0,0,0,0,:,:,:,:,3].astype("float64")
-    
+
 
      consumption=wage*hours*(1-frac_savings)
      utility=consumption_utility_multiplier*consumption**(1-intertemp_elasticity)/(1-intertemp_elasticity) \
@@ -997,7 +997,7 @@ def get_utility(constants,parameters,structure,offset,multiplier,flat_grid_data)
      new_shape=(structure[6,0],)+group_shape[4:8]
      utility=utility.reshape(new_shape).transpose((1,2,0,3,4)).flatten()
      utility_shape=numpy.ascontiguousarray(structure[4:9,0])
-     return utility,utility_shape#,consumption,hours/max_hours_per_year,wage,frac_savings    
+     return utility,utility_shape#,consumption,hours/max_hours_per_year,wage,frac_savings
 
 
 def get_recursion_data(constants,parameters,structure,offset,multiplier,flat_grid_data,retirement_utility_lookup):
@@ -1013,18 +1013,18 @@ def get_recursion_data(constants,parameters,structure,offset,multiplier,flat_gri
      data=flat_grid_data[:numpy.prod(group_shape)].reshape(group_shape)
      assets=offset[4]+multiplier[4]*data[0,:,:,:,:,:,0,0,0]
      assets=assets.flatten().astype("float64")
-     assets=assets.reshape((len(assets),1))*numpy.ones((1,structure[6,0])) 
+     assets=assets.reshape((len(assets),1))*numpy.ones((1,structure[6,0]))
      assets=assets.flatten()
     # consumption=assets
      #hours=0
-     print retirement_utility_lookup.shape,max(assets)
+     print(retirement_utility_lookup.shape,max(assets))
      #boundary_utility=consumption_utility_multiplier*consumption**(1-intertemp_elasticity)/(1-intertemp_elasticity) #\
      boundary_utility=consumption_utility_multiplier*retirement_utility_lookup[numpy.floor(assets).astype('uint32')]
      initial_recursion_data=numpy.zeros( (structure[0,0],len(boundary_utility)) ,dtype='float32')
      initial_recursion_data[-1,:]=boundary_utility
      initial_recursion_data=initial_recursion_data.flatten()
      initial_recursion_shape=structure[range(7),0]
-     return initial_recursion_data,initial_recursion_shape    
+     return initial_recursion_data,initial_recursion_shape
 
 
 def get_probabilities(structure,constants,parameters,flat_grid_data):
@@ -1071,24 +1071,24 @@ def pack_bits(indices,bit_widths,num_bytes,length,rslt):
         x=x+indices[i]
         x=x<<bit_widths[i+1]
     x=x+indices[length-1]
-    print "x",x
+    print("x",x)
     for i in range(num_bytes-1):
         rslt[num_bytes-i-1]=x & 255
         x=x>>8
     rslt[0]=x & 255
-    
-    print "rslt",rslt
+
+    print ("rslt",rslt)
     return rslt
 
 #@cuda.jit(device=True)
 def unpack_bits(y,bit_widths,bit_width_powers,num_bytes,length,rslt):
     x=0
-    print "again result",y
+    print ("again result",y)
     for i in range(num_bytes-1):
         x=x+y[i]
         x=x<<8
     x=x+y[num_bytes-1]
-    print "x again",x
+    print ("x again",x)
     for i in range(length-1,-1,-1):
         rslt[i]=x & (bit_width_powers[i]-1)
         x=x>> bit_widths[i]
@@ -1110,20 +1110,20 @@ def unpack_state_space(x,bit_widths,bit_width_powers,num_bytes,length,num_float,
 #    rslt1=numba.cuda.local.array((20), numba.uint8)
     rslt1=numpy.zeros(20,dtype="uint8")
     rslt1=unpack_bits(x,bit_widths,bit_width_powers,num_bytes,length+num_float,rslt1)
-    print "rslt1",rslt1
+    print("rslt1",rslt1)
     for i in range(length):
         rslt2[i]=rslt1[i]
     for i in range(num_float):
-        print "float",length-num_float+i,length+i,float(rslt1[length+i])/bit_width_powers[length+i]
+        print("float",length-num_float+i,length+i,float(rslt1[length+i])/bit_width_powers[length+i])
         rslt2[length-num_float+i]=rslt1[length-num_float+i]+float(rslt1[length+i])/bit_width_powers[length+i]
     return rslt2
-    
- 
+
+
 
 
 @cuda.jit(device=True)
 def update_state_space(coordinates,new_coordinates,parameters,constants):
-    
+
     #Get parameters (varying these for fit)
     skill_price_constant=parameters[8]
     skill_price_by_job=numba.cuda.local.array((9), numba.float64)
@@ -1139,7 +1139,7 @@ def update_state_space(coordinates,new_coordinates,parameters,constants):
     human_capital_accumulation_rate=constants[3]
     hours_per_year=constants[0]
     interest_rate=constants[2]
-    tax_rate=constants[6]    
+    tax_rate=constants[6]
     min_assets=constants[5]
 
     #Get current coordinates
@@ -1156,7 +1156,7 @@ def update_state_space(coordinates,new_coordinates,parameters,constants):
     got_new_job=coordinates[10]
     new_pp=coordinates[11]
     new_z=coordinates[12]
-    
+
 
     #update coordinates to next year
     skill_price=skill_price_constant+pp_premium*pp+skill_price_by_job[job]+specific_skill_depreciation*starting_new_job+z
@@ -1178,7 +1178,7 @@ def update_state_space(coordinates,new_coordinates,parameters,constants):
                      +specific_skill_depreciation*new_starting_new_job\
                      +new_z
     new_wage=new_skill_price*new_human_capital
- 
+
 
     #plug new coordinates into output
     new_coordinates[0]=coordinates[0]+1
@@ -1189,7 +1189,7 @@ def update_state_space(coordinates,new_coordinates,parameters,constants):
     new_coordinates[5]=new_wage
     new_coordinates[6]=new_z
     return new_coordinates
-        
+
 
 
 
@@ -1201,13 +1201,13 @@ lines=list(csv.reader(open('data/structure.csv')))
 headers=lines[0]
 lines=lines[1:]
 header2col=dict(zip(headers,range(len(headers))))
-intcols=["dimension_size", 
+intcols=["dimension_size",
          "group",
-         "position_in_group", 
+         "position_in_group",
          "position_in_sequence_of_numeric_variables_in_group",\
           "position_in_state_space",
          "probability_group",
-          "type_code","space_code","distribution_type"] 
+          "type_code","space_code","distribution_type"]
 structure=numpy.ascontiguousarray(numpy.array([ [int(line[header2col[col]]) for col in intcols] for line in lines])).astype("int8")
 varnames=[x[0].rstrip() for x in lines]
 dim_size=structure[:,0]
@@ -1241,7 +1241,7 @@ state_space_winner=numpy.ascontiguousarray(numpy.array(state_space_shape,dtype="
 
 
 #get size and shape of exogenous variables
-exogenous_shape=numpy.ascontiguousarray(numpy.array([dim_size[i] for i in range(structure.shape[0]) 
+exogenous_shape=numpy.ascontiguousarray(numpy.array([dim_size[i] for i in range(structure.shape[0])
                                                                                 if space_code[i]==3])).astype("int8")
 exogenous_size=numpy.product(exogenous_shape)
 
@@ -1273,7 +1273,7 @@ group_shapes=numpy.ascontiguousarray(numpy.ones(group_metadata.shape)).astype("i
 group_shapes[numpy.where(group_metadata>=0)]=dim_size[group_metadata[numpy.where(group_metadata>=0)]]
 group_shapes=numpy.hstack( (group_shapes,numpy.ones((group_shapes.shape[0],1))) )
 for group in range(group_shapes.shape[0]):
-    group_shapes[group,group_length[group]]=num_numeric_by_group[group]    
+    group_shapes[group,group_length[group]]=num_numeric_by_group[group]
 
 #Get structure of probability data
 lines=list(csv.reader(open("prob_structure.csv")))
@@ -1288,10 +1288,10 @@ prob_shapes=numpy.ascontiguousarray(numpy.ones(prob_structure.shape)).astype("in
 prob_shapes[numpy.where(prob_structure>=0)]=dim_size[prob_structure[numpy.where(prob_structure>=0)]]
 flat_prob_offsets=numpy.ascontiguousarray(numpy.array([0]+list(numpy.product(prob_shapes,1).cumsum()[:-1]))).astype("uint32")
 
-#Get the number of elements in the flat version of each group 
+#Get the number of elements in the flat version of each group
 #Note the size is the product of the dimensions multiplied by the number of numeric variables
-#for example if we have 4 variable (a,b,c,d) with dimension sizes (3,5,2,6) and 
-# b and c are numeric, then we need an array of shape (3,5,2,6,2) to store it, where the last dimension stores 
+#for example if we have 4 variable (a,b,c,d) with dimension sizes (3,5,2,6) and
+# b and c are numeric, then we need an array of shape (3,5,2,6,2) to store it, where the last dimension stores
 #the value of the numeric variables
 group_data_sizes=numpy.product(group_shapes,1)*(num_numeric_by_group>0)
 
@@ -1333,7 +1333,7 @@ pp_prob[:,0]=1-pp_prob[:,1]
 flat_pp_prob=pp_prob.flatten()
 flat_pp_cum_prob=pp_prob.cumsum(1).flatten()
 
-#Initialize the data (flat_recursion_data) that we're going to iterate on 
+#Initialize the data (flat_recursion_data) that we're going to iterate on
 state_space_size=numpy.product(state_space_shape)
 
 #******************************************************************************
@@ -1412,7 +1412,7 @@ wage_values.sort()
 asset_values=offset[4]+multiplier[4]*numpy.array(asset_values)
 wage_values=offset[5]+multiplier[5]*numpy.array(wage_values)
 
-#interpolate to get indices for initial assets and wages  
+#interpolate to get indices for initial assets and wages
 asset_indices=numpy.round(numpy.interp(assets,asset_values,range(len(asset_values))))
 wage_indices=numpy.round(numpy.interp(wage,wage_values,range(len(wage_values))))
 
@@ -1426,11 +1426,11 @@ initial_states[:,5]=wage_indices
 
 
 numeric_decision_shape=numpy.array([structure[i,0] for i in range(structure.shape[0]) if space_code[i]==2 and type_code[i]==1])
-numeric_decision_reverse_prod=reverse_prod(numeric_decision_shape)   
+numeric_decision_reverse_prod=reverse_prod(numeric_decision_shape)
 int_decision_shape=numpy.array([structure[i,0] for i in range(structure.shape[0]) if space_code[i]==2 and type_code[i]==0])
 int_decision_reverse_prod=reverse_prod(int_decision_shape)
-print numeric_decision_shape
-print int_decision_shape
+print(numeric_decision_shape)
+print(int_decision_shape)
 
 state_decision_shape=numpy.array([structure[i,0] for i in range(structure.shape[0]) if space_code[i]<3])
 
@@ -1463,10 +1463,10 @@ constants=numpy.array([5110,1.5,.04,1,.98,22000,.28])
 
 def evaluate_parameter_set(parameters):
     global space_code
-    
+
     flat_prob_data,flat_cum_prob_data=get_flat_probabilities(structure,constants,parameters,flat_grid_data,flat_prob_new_job,flat_pp_prob,flat_cum_prob_new_job,flat_pp_cum_prob)
 
-    #Initialize the data (flat_recursion_data) that we're going to iterate on 
+    #Initialize the data (flat_recursion_data) that we're going to iterate on
     state_space_size=numpy.product(state_space_shape)
     flat_recursion_data,flat_recursion_data_shape=get_recursion_data(constants,parameters,structure,offset,multiplier,
                                                                                 flat_grid_data,retirement_utility_lookup)
@@ -1479,7 +1479,7 @@ def evaluate_parameter_set(parameters):
     state_decision_size=numpy.product([structure[i,0] for i in range(1,structure.shape[0]) if space_code[i]<3])
     t1=time.time()
     for batch in range(num_batches):
-        print batch
+        print(batch)
         gpu_result=numpy.ascontiguousarray(numpy.zeros( (rows_per_batch,7),dtype='float32'))
         update_state[blocks_per_batch,threads_per_block](batch,threads_per_batch,batch_result_int,batch_result_frac,batch_result_prob,
                       state_space_shape_reverse_prod,utility,constants,parameters,state_space_shape,
@@ -1492,7 +1492,7 @@ def evaluate_parameter_set(parameters):
         update_state_result_int[batch,:,:]=batch_result_int.copy_to_host()
         update_state_result_frac[batch,:,:]=batch_result_frac.copy_to_host()
         update_state_result_prob[batch,:]=batch_result_prob.copy_to_host()
-  
+
 
 
 
@@ -1500,7 +1500,7 @@ def evaluate_parameter_set(parameters):
     expectations=numpy.zeros((num_time_steps,num_batches,threads_per_batch/exogenous_size),dtype='float32')
     for time_step in range(29,-1,-1):
         for batch in range(num_batches):
-            print 'time_step/batch',time_step,batch
+            print('time_step/batch',time_step,batch)
             mycount=numpy.ascontiguousarray(numpy.zeros( numeric_space_size))
             exponential_rates_by_job=numpy.ascontiguousarray(numpy.zeros( state_decision_size))
             sum_expectation=numpy.ascontiguousarray(numpy.zeros( numeric_space_size))
@@ -1532,7 +1532,7 @@ def evaluate_parameter_set(parameters):
     history=numpy.zeros((num_time_steps-1,gpu_shape[0],structure.shape[0]),dtype='float32')
     for time_step in range(num_time_steps-1):
 
-        print 'time step:',time_step
+        print('time step:',time_step)
         discounted_utility=numpy.ascontiguousarray(numpy.zeros( (numpy.product(gpu_shape),),dtype='float32'))
         rand_float=numpy.ascontiguousarray(numpy.random.rand(gpu_shape[0],gpu_shape[1]))
         best_value=(numpy.ascontiguousarray(numpy.zeros(gpu_shape[0])))
@@ -1568,9 +1568,9 @@ def evaluate_parameter_set(parameters):
     sim_moments=numpy.array(df.groupby(['age','pp']).agg('mean')[['wage','hours']])
     empirical_moments=numpy.load('data/moments.npy')
     rslt=numpy.abs((sim_moments-empirical_moments)/empirical_moments).mean()
-    
+
     moments=numpy.load('mymoments.npy')
-    newmoments=numpy.zeros((moments.shape[0]+1,moments.shape[1],moments.shape[2]))    
+    newmoments=numpy.zeros((moments.shape[0]+1,moments.shape[1],moments.shape[2]))
     newmoments[:-1,:,:]=moments
     newmoments[-1,:,:]=sim_moments
     #numpy.save('mymoments.npy',newmoments)
@@ -1597,6 +1597,3 @@ rslt=evaluate_parameter_set(parameters)
 #print parameters.shape,row.shape,results.shape
 #results=numpy.vstack((results,row))
 #numpy.save('results.npy',results)
-
-
-
