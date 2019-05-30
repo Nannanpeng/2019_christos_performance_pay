@@ -1258,7 +1258,7 @@ thread_shape_reverse_prod=reverse_prod(thread_shape)
 
 
 #Read in metadata on input data
-lines=list(csv.reader(open("data_groups.csv")))
+lines=list(csv.reader(open("data/data_groups.csv")))
 group_metadata=numpy.ascontiguousarray(numpy.array([[int(x) for x in line] for line in lines[1:]]))
 group_lengths=numpy.ascontiguousarray(group_metadata[:,1]).astype("uint8")
 group_metadata=group_metadata[:,2:]
@@ -1276,7 +1276,7 @@ for group in range(group_shapes.shape[0]):
     group_shapes[group,group_length[group]]=num_numeric_by_group[group]
 
 #Get structure of probability data
-lines=list(csv.reader(open("prob_structure.csv")))
+lines=list(csv.reader(open("data/prob_structure.csv")))
 prob_structure=numpy.ascontiguousarray(numpy.array([[int(x) for x in line] for line in lines[1:]]))
 prob_lengths=numpy.ascontiguousarray(prob_structure[:,1]).astype("int8")
 prob_structure=numpy.ascontiguousarray(prob_structure[:,2:]).astype("int8")
@@ -1305,7 +1305,7 @@ grid=flat_grid_data[:-20].reshape((31,9,2,2,10,10,10,10,4))
 asset_values=list(set(grid[:,:,:,:,:,:,:,:,0].flatten()))
 
 #read in probability data for getting a new job
-lines=list(csv.reader(open("transition_probs.csv")))
+lines=list(csv.reader(open("data/transition_probs.csv")))
 headers=lines[0]
 header2col=dict(zip(headers,range(len(headers))))
 lines=lines[1:]
@@ -1318,7 +1318,7 @@ flat_prob_new_job=Probs.flatten()
 flat_cum_prob_new_job=Probs.cumsum(2).flatten()
 
 #read in probability data for a new job being performance pay
-lines=list(csv.reader(open("share_pp_by_age.csv")))
+lines=list(csv.reader(open("data/share_pp_by_age.csv")))
 headers=lines[0]
 header2col=dict(zip(headers,range(len(headers))))
 lines=lines[1:]
