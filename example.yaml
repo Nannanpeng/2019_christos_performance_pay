@@ -1,0 +1,14 @@
+
+# Test file
+name: Simple Model
+externalParams:
+  riskAversion: 0.0
+  discountFactor: 0.0
+  interestRate: 0.0
+  humanCapitalDepreciation: 0.0
+  changeEmploymentProbs:
+    e: 0.0
+    u: 0.0
+    l: 0.0
+  utilityUnemployed: 0.0
+  borrowingLimit: 0.0
