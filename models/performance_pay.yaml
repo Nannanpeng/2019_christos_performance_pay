@@ -1,0 +1,16 @@
+# Simplified Model
+# Described in "Makridis - Model Subset"
+
+name: Performance Pay Model
+externalParams:
+  riskAversion: 1.5 # Based on preferred macroeconomic estimates
+  discountFactor: 0.98 # Because time steps are 1 year
+  interestRate: 0.04 # Chosen to match risk free return (US Treasury bonds)
+  humanCapitalDepreciation: -0.05 # Hendricks, 2013
+  # Employment change probabilities estimated from NLSY97 data
+  changeEmploymentProbs:
+    e: 0.0
+    u: 0.0
+    l: 0.0
+  utilityUnemployed: 0.06 # results from Chodorow-Reich et al., 2016
+  borrowingLimit: 22000.0 # 22,000 -- 95th percentile of savings in NLSY97 data

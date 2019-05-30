@@ -1,0 +1,10 @@
+# Simplified Model
+# Described in "Makridis - Model Subset"
+
+name: Simplifed Model
+externalParams:
+  riskAversion: 1.5 # Based on preferred macroeconomic estimates
+  discountFactor: 0.98 # Because time steps are 1 year
+  interestRate: 0.04 # Chosen to match risk free return (US Treasury bonds)
+  humanCapitalDepreciation: -0.05 # Hendricks, 2013
+  borrowingLimit: 22000.0 # 22,000 -- 95th percentile of savings in NLSY97 data

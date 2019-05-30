@@ -7,7 +7,7 @@
 
 ### data
 
-Stored data
+Contains cleaned data sets, as well as some derived values.
 
 ### old
 
