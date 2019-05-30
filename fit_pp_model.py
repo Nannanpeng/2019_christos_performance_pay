@@ -8,7 +8,7 @@ import yaml
 
 import model
 import utils
-
+import algorithm
 
 ModelSpec = namedtuple("ModelSpec",["a"])
 
@@ -45,12 +45,12 @@ def configure_run(run_config):
 def fit_model(run_config):
 
     # Select the algorithm
-    algorithm = None
+    alg = None
     try:
-        algorithm_class = getattr(algorithm,run_config['alg'])
-        algorithm = algorithm_class()
+        algorithm_class = getattr(algorithm,run_config['algorithm'])
+        alg = algorithm_class()
     except AttributeError as e:
-        raise RuntimeError('Algorithm "%s" not found' % run_config['alg'])
+        raise RuntimeError('Algorithm "%s" not found' % run_config['algorithm'])
 
 
     # episode_results = np.array([]).reshape((0,6))
@@ -85,4 +85,5 @@ if __name__ == "__main__":
     parser = utils.fit_model_argparser()
     args = parser.parse_args()
     run_config = utils.run_config_from_args(args)
+    print(run_config)
     fit_model(run_config)
