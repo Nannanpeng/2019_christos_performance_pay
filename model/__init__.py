@@ -5,14 +5,13 @@ from . import utility
 
 __all__ = ['GenericModel','utility']
 
-class GenericModel(object):
+class GenericPPModel(object):
 
     def __init__(self,spec):
         # some sanity checks for model spec
         assert 'utilityFunction' in spec, "Need to specify a utility function"
         assert 'parameters' in spec, "Need to specify model parameters"
         assert 'constants' in spec, "Need to specify constants"
-
 
         self.constants = utils.struct_factory('%s_Constants' % spec['name'],spec['constants'])
         self.parameters = utils.struct_factory('%s_Parameters' % spec['name'],spec['parameters'])

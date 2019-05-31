@@ -84,6 +84,4 @@ if __name__ == "__main__":
     # run_config = utils.run.run_config_from_args(args)
     # fit_model(run_config)
     a = utils.load_model_from_yaml('./specs/simplified.yaml')
-    print(a)
     b = model.GenericModel(a)
-    print(b.parameters)

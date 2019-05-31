@@ -20,8 +20,3 @@ unit tests
 ### bin
 
 scripts
-
-
-# Some links
-https://lectures.quantecon.org/py/coleman_policy_iter.html
-https://macroeconomics.github.io/dynamic-programming-in-python.html#.XO9WFnXYqbI
