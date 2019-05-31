@@ -1,7 +1,7 @@
 # Simplified Model
 # Described in "Makridis - Model Subset"
 
-name: Simplified Model
+name: SimplifiedModel
 constants:
    # Inter-temporal Risk Aversion
   iota: 1.5 # Based on preferred macroeconomic estimates
@@ -43,5 +43,4 @@ parameters:
     - -0.51
     - -0.16
     - -0.22
-    
 utilityFunction: simple_utility
