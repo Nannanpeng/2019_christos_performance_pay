@@ -1,10 +1,47 @@
 # Simplified Model
 # Described in "Makridis - Model Subset"
 
-name: Simplifed Model
-externalParams:
-  riskAversion: 1.5 # Based on preferred macroeconomic estimates
-  discountFactor: 0.98 # Because time steps are 1 year
-  interestRate: 0.04 # Chosen to match risk free return (US Treasury bonds)
-  humanCapitalDepreciation: -0.05 # Hendricks, 2013
-  borrowingLimit: 22000.0 # 22,000 -- 95th percentile of savings in NLSY97 data
+name: Simplified Model
+constants:
+   # Inter-temporal Risk Aversion
+  iota: 1.5 # Based on preferred macroeconomic estimates
+  # Discount Factor
+  beta: 0.98 # Selected because time steps are 1 year
+  # Risk Free Interest Rate
+  r: 0.04 # Chosen to match US Treasury bonds
+  # Human Capital Depreciation
+  xi: -0.05 # Sourced from Hendricks, 2013
+  # Borrowing Limit
+  B: 22000.0 # 22,000 -- 95th percentile of savings in NLSY97 data
+parameters:
+  # Disutility of labor
+  chi: 2.13
+  # Labor elasticity
+  psi: 0.50
+  # Learning curvature
+  gamma_l: 0.7
+  # Learning complementarity
+  gamma_h: 0.0
+  # General skill depreciation
+  xi_1: -0.05
+  # Specific skill depreciation
+  xi_2: -0.08
+  # Price shock variance
+  var_ps: 0.03
+  # skill price process constant
+  alpha_0: 2.72
+  # Performance pay premium
+  alpha: 0.28
+  # Job specific skill price premium. Denoted as sigma^j in write-up
+  p_job:
+    - 0.0
+    - 0.21
+    - -0.11
+    - -0.17
+    - 0.13
+    - -0.01
+    - -0.51
+    - -0.16
+    - -0.22
+    
+utilityFunction: simple_utility

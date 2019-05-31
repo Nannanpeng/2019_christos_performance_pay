@@ -6,11 +6,10 @@ import numpy as np
 from collections import namedtuple
 import yaml
 
-import model
 import utils
-import algorithm
 
-ModelSpec = namedtuple("ModelSpec",["a"])
+
+
 
 def configure_run(run_config):
     vf_result_path = os.path.join(run_config['odir'],'value_function.npy')
@@ -28,8 +27,6 @@ def configure_run(run_config):
         logging.basicConfig(level=log_level)
 
 
-    configure_run_io(run_config)
-
     # TODO: Fix this for numba -- I don't think it will seed correctly as is
     if run_config['seed'] is not None:
         random.seed(run_config['seed'])
@@ -45,6 +42,8 @@ def configure_run(run_config):
 
 
 def fit_model(run_config):
+    configure_run(run_config)
+
 
     # Select the algorithm
     alg = None
@@ -83,9 +82,50 @@ def fit_model(run_config):
 
 
 
+
+from scipy.interpolate import LinearNDInterpolator
+# import model
+# import algorithm
+
+
+class SimpleModel(object):
+
+    def __init__(self,constants_dict,param_dict):
+        self.constants = utils.struct_factory('SimpleModel_Constants',constants_dict)
+        self.parameters = utils.struct_factory('SimpleModel_Parameters',param_dict)
+
+    def utility(self):
+        pass
+
+    def transition(self):
+        pass
+
+
+
+
+class MultiDiscretizationLI(object):
+    """
+    Grid should have one less dimension than vals
+
+    Performs linear interpolation
+    """
+    def __init__(self,grid,values):
+        self._num_grids = values.shape[0]
+        self.discretizations = [LinearNDInterpolator(grid,values[i,]) for i in range(self._num_grids)]
+
+    def eval(self,idx,points):
+        assert idx < self._num_grids, "idx is out of range"
+        return self.discretizations[idx]
+
+
+
+
 if __name__ == "__main__":
-    parser = utils.fit_model_argparser()
-    args = parser.parse_args()
-    run_config = utils.run_config_from_args(args)
-    print(run_config)
-    fit_model(run_config)
+    # parser = utils.run.fit_model_argparser()
+    # args = parser.parse_args()
+    # run_config = utils.run.run_config_from_args(args)
+    # fit_model(run_config)
+    a = utils.load_model_from_yaml('./model/simplified.yaml')
+    print(a)
+    b = SimpleModel(a['constants'],a['parameters'])
+    print(b.parameters)
