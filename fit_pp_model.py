@@ -79,9 +79,10 @@ def fit_model(run_config):
 
 
 if __name__ == "__main__":
-    # parser = utils.run.fit_model_argparser()
-    # args = parser.parse_args()
-    # run_config = utils.run.run_config_from_args(args)
+    parser = utils.run.fit_model_argparser()
+    args = parser.parse_args()
+    run_config = utils.run.run_config_from_args(args)
     # fit_model(run_config)
-    a = utils.load_model_from_yaml('./specs/simplified.yaml')
-    b = model.GenericModel(a)
+    # a = utils.load_model_from_yaml('./specs/simplified.yaml')
+    print(run_config['model'])
+    # b = model.GenericModel(a)

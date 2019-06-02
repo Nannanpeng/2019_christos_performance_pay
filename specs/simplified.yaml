@@ -2,45 +2,80 @@
 # Described in "Makridis - Model Subset"
 
 name: SimplifiedModel
+dynamics:
+  utilityFunction: simple_utility
 constants:
    # Inter-temporal Risk Aversion
-  iota: 1.5 # Based on preferred macroeconomic estimates
+  iota:
+    kind: scalar
+    value: 1.5 # Based on preferred macroeconomic estimates
   # Discount Factor
-  beta: 0.98 # Selected because time steps are 1 year
+  beta:
+    kind: scalar
+    value: 0.98 # Selected because time steps are 1 year
   # Risk Free Interest Rate
-  r: 0.04 # Chosen to match US Treasury bonds
+  r:
+    kind: scalar
+    value: 0.04 # Chosen to match US Treasury bonds
   # Human Capital Depreciation
-  xi: -0.05 # Sourced from Hendricks, 2013
+  xi:
+    kind: scalar
+    value: -0.05 # Sourced from Hendricks, 2013
   # Borrowing Limit
-  B: 22000.0 # 22,000 -- 95th percentile of savings in NLSY97 data
+  B:
+    kind: scalar
+    value: 22000.0 # 22,000 -- 95th percentile of savings in NLSY97 data
+  # Performance pay probabilities by job and age, estimated from NLSY97 data
+  pp_prob:
+    kind: csv
+    value: ./specs/pp_probs.csv
 parameters:
   # Disutility of labor
-  chi: 2.13
+  chi:
+    kind: scalar
+    value: 2.13
   # Labor elasticity
-  psi: 0.50
+  psi:
+    kind: scalar
+    value: 0.50
   # Learning curvature
-  gamma_l: 0.7
+  gamma_l:
+    kind: scalar
+    value: 0.7
   # Learning complementarity
-  gamma_h: 0.0
+  gamma_h:
+    kind: scalar
+    value: 0.0
   # General skill depreciation
-  xi_1: -0.05
+  xi_1:
+    kind: scalar
+    value: -0.05
   # Specific skill depreciation
-  xi_2: -0.08
+  xi_2:
+    kind: scalar
+    value: -0.08
   # Price shock variance
-  var_ps: 0.03
+  var_ps:
+    kind: scalar
+    value: 0.03
   # skill price process constant
-  alpha_0: 2.72
+  alpha_0:
+    kind: scalar
+    value: 2.72
   # Performance pay premium
-  alpha: 0.28
+  alpha:
+    kind: scalar
+    value: 0.28
   # Job specific skill price premium. Denoted as sigma^j in write-up
   p_job:
-    - 0.0
-    - 0.21
-    - -0.11
-    - -0.17
-    - 0.13
-    - -0.01
-    - -0.51
-    - -0.16
-    - -0.22
-utilityFunction: simple_utility
+    kind: array
+    value:
+      - 0.0
+      - 0.21
+      - -0.11
+      - -0.17
+      - 0.13
+      - -0.01
+      - -0.51
+      - -0.16
+      - -0.22
