@@ -85,4 +85,5 @@ if __name__ == "__main__":
     # fit_model(run_config)
     # a = utils.load_model_from_yaml('./specs/simplified.yaml')
     print(run_config['model'])
-    # b = model.GenericModel(a)
+    b = model.SimplePPModel(run_config['model'])
+    print(b)

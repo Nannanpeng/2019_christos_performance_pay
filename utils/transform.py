@@ -8,7 +8,7 @@ __all__ = ['struct_factory','yaml_to_model']
 def struct_factory(name,dictionary):
     return namedtuple(name, dictionary.keys())(**dictionary)
 
-model = namedtuple('ModelSpec',['constants','parameters','dynamics'])
+# model = namedtuple('ModelSpec',['constants','parameters','dynamics'])
 
 def _load_value(kind,val):
     if kind == 'scalar':
@@ -21,6 +21,4 @@ def _load_value(kind,val):
 def yaml_to_model(model_dict):
     constants = { k: _load_value(v['kind'],v['value']) for (k,v) in model_dict['constants'].items() }
     parameters = { k: _load_value(v['kind'],v['value']) for (k,v) in model_dict['parameters'].items() }
-    dynamics = model_dict['dynamics']
-
-    return model(constants,parameters,dynamics)
+    return {'constants': constants,'name': model_dict['name'], 'parameters': parameters, 'dynamics': model_dict['dynamics']}

@@ -8,7 +8,6 @@ from .transform import yaml_to_model
 __all__ = ['load_yaml','make_directory','run_config_from_args','fit_model_argparser']
 
 
-
 def load_yaml(file_path):
     with open(file_path, 'r') as stream:
         try:
