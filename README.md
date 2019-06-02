@@ -20,3 +20,6 @@ unit tests
 ### bin
 
 scripts
+
+# Notes
+Currently dynamics specification from `[Name].yaml` is not supported. The simplified model is always used.

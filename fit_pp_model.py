@@ -7,8 +7,7 @@ from collections import namedtuple
 import yaml
 
 import utils
-import model
-import algorithm
+import solver
 
 def configure_run(run_config):
     vf_result_path = os.path.join(run_config['odir'],'value_function.npy')
@@ -85,5 +84,5 @@ if __name__ == "__main__":
     # fit_model(run_config)
     # a = utils.load_model_from_yaml('./specs/simplified.yaml')
     print(run_config['model'])
-    b = model.SimplePPModel(run_config['model'])
+    b = solver.SimplePPModel(run_config['model'])
     print(b)
