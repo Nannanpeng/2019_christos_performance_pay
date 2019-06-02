@@ -28,7 +28,7 @@ constants:
   # Performance pay probabilities by job and age, estimated from NLSY97 data
   pp_prob:
     kind: csv
-    value: ./specs/pp_probs.csv
+    value: ./model_specs/pp_probs.csv
 parameters:
   # Disutility of labor
   chi:

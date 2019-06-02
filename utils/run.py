@@ -42,7 +42,7 @@ def fit_model_argparser():
     parser.add_argument("-s",'--save_interval', type=float, default=1e3, help="current estimates save Interval")
     parser.add_argument("-a",'--algorithm', type=str, default='VFI', help="which algorithm to use")
     parser.add_argument("-l",'--log_interval', type=int, default=50, help="Log Interval")
-    parser.add_argument("-m",'--model', type=str, default="./specs/simplified.yaml", help="Which model to use")
+    parser.add_argument("-m",'--model', type=str, default="./model_specs/simplified.yaml", help="Which model to use")
     parser.add_argument("-co", "--console", action="store_true", help="log to console")
     parser.add_argument('--seed', type=int, default=543, metavar='N',help='random seed (default: 543). -1 indicates no seed')
 
