@@ -38,7 +38,7 @@ class SimplePPModel(BasePPModel):
 
     def __init__(self,spec):
         super().__init__(spec)
-        self.T = 30
+        self.T = 31 # T = 31 is terminal state. TODO: This belongs elsewhere
 
 
     # shocks are the random part of the system dynamics
@@ -48,7 +48,7 @@ class SimplePPModel(BasePPModel):
     # shocks is a list (in this case length 1), of values
     def transition_list(state: SimpleState, control, shocks = [0.0]):
         tl = []
-        
+
 
         return tl
 
@@ -58,7 +58,7 @@ class SimplePPModel(BasePPModel):
     def utility(state, control, shocks):
         if state[0] == self.T + 1:
             return self._terminal_utility(state)
-        if state[0] > self.T:
+        if state[0] > self.T + 1:
             raise RuntimeError('Requested time greater than T')
 
         u = control.consumption**(1. - self.constants.iota) / (1. - self.constants.iota)
