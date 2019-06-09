@@ -8,7 +8,8 @@ constants:
    # Inter-temporal Risk Aversion
   iota:
     kind: scalar
-    value: 1.5 # Based on preferred macroeconomic estimates
+    value: 0.5
+    # value: 1.5 # Based on preferred macroeconomic estimates <- Not sure this is right, maybe a typo?
   # Discount Factor
   beta:
     kind: scalar

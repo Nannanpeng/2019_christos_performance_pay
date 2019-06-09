@@ -20,7 +20,7 @@ class BasePPModel(object):
 
 
 
-SimpleState = namedtuple('SimpleState',['discrete','continuous'])
+State = namedtuple('State',['t','discrete','continuous'])
 PPControl = namedtuple('PPControl',['consumption','labor','job'])
 
 class SimplePPModel(BasePPModel):
@@ -28,7 +28,7 @@ class SimplePPModel(BasePPModel):
     Simplified Model implementation.
 
     State space is an instance of SimpleState, where
-     - discrete: (t,O_t,P_t), a length 3 tuple of integers
+     - discrete: (e_t,o_t,P_t), a length 3 tuple of integers
      - continuous: (z_t,h_t,a_t), a length 3 tuple of floats
 
     The interpretation of the components of the state are as follows
@@ -48,7 +48,7 @@ class SimplePPModel(BasePPModel):
     # distribution. A list of tuples is returned with successor states and the corresponding
     # probabilities.
     # shocks is a list (in this case length 1), of values
-    def transition_list(self,state: SimpleState, control: PPControl, shocks = [0.0]):
+    def transition_list(self,state: State, control: PPControl, shocks = [0.0]):
 
         tl = []
 
@@ -59,9 +59,9 @@ class SimplePPModel(BasePPModel):
     # need to pass in current state, the selected control, and any random shocks
     # TODO: Check to ensure borrowing constraint is satisfied
     def reward(self,state, control, shocks):
-        if state[0] == self.T + 1:
+        if state.t == self.T:
             return self._terminal_utility(state)
-        if state[0] > self.T + 1:
+        if state.t > self.T:
             raise RuntimeError('Requested time greater than T')
 
         return self.reward_noshock(state,control) + shocks[0]
@@ -78,6 +78,7 @@ class SimplePPModel(BasePPModel):
 
     # Simplifying assumption -- consume all wealth in final period
     def _terminal_utility(self,state):
+        print('here',state,1. - self.constants.iota)
         return (state.continuous[2])**(1. - self.constants.iota) / (1. - self.constants.iota)
 
 
