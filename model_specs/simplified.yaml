@@ -24,7 +24,8 @@ constants:
   # Borrowing Limit
   B:
     kind: scalar
-    value: 22000.0 # 22,000 -- 95th percentile of savings in NLSY97 data
+    value: 0.0
+    # value: 22000.0 # 22,000 -- 95th percentile of savings in NLSY97 data
   # Performance pay probabilities by job and age, estimated from NLSY97 data
   pp_prob:
     kind: csv

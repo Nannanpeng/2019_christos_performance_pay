@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 from scipy.interpolate import LinearNDInterpolator
 from collections import namedtuple
@@ -19,7 +21,7 @@ class BasePPModel(object):
 
 
 SimpleState = namedtuple('SimpleState',['discrete','continuous'])
-SimpleControl = namedtuple('SimpleControl',['consumption','labor','job'])
+PPControl = namedtuple('PPControl',['consumption','labor','job'])
 
 class SimplePPModel(BasePPModel):
     """
@@ -46,7 +48,8 @@ class SimplePPModel(BasePPModel):
     # distribution. A list of tuples is returned with successor states and the corresponding
     # probabilities.
     # shocks is a list (in this case length 1), of values
-    def transition_list(state: SimpleState, control, shocks = [0.0]):
+    def transition_list(self,state: SimpleState, control: PPControl, shocks = [0.0]):
+
         tl = []
 
 
@@ -55,12 +58,16 @@ class SimplePPModel(BasePPModel):
 
     # need to pass in current state, the selected control, and any random shocks
     # TODO: Check to ensure borrowing constraint is satisfied
-    def utility(state, control, shocks):
+    def reward(self,state, control, shocks):
         if state[0] == self.T + 1:
             return self._terminal_utility(state)
         if state[0] > self.T + 1:
             raise RuntimeError('Requested time greater than T')
 
+        return self.reward_noshock(state,control) + shocks[0]
+
+
+    def reward_noshock(self,state, control):
         u = control.consumption**(1. - self.constants.iota) / (1. - self.constants.iota)
         u += - self.parameters.chi * (control.labor**(1+self.parameters.psi)) / (1+self.parameters.psi)
         u += shocks[0]
@@ -68,8 +75,10 @@ class SimplePPModel(BasePPModel):
         return u
 
 
-    def _terminal_utility(state):
-        return 0.0
+
+    # Simplifying assumption -- consume all wealth in final period
+    def _terminal_utility(self,state):
+        return (state.continuous[2])**(1. - self.constants.iota) / (1. - self.constants.iota)
 
 
 

@@ -83,8 +83,7 @@ if __name__ == "__main__":
     run_config = utils.run.run_config_from_args(args)
     # fit_model(run_config)
     # a = utils.load_model_from_yaml('./specs/simplified.yaml')
-
-
-    print(run_config['model'])
+    # print(run_config['model'])
     b = solver.models.SimplePPModel(run_config['model'])
     print(b)
+    solver.algorithm.solve(b)
