@@ -9,6 +9,9 @@ from utils import math as um
 from .approximation import Multi_LI_VFA, Multi_LI_QFA
 
 
+def onestep_objective(vfa,t,k,state):
+    
+    pass
 
 def random_grid_sample(num_points,grid):
     rows = random.sample(range(0,grid.shape[0]), num_points)

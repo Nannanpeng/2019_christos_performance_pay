@@ -85,6 +85,17 @@ class SimplePPModel(BasePPModel):
     def _terminal_utility(self,state):
         return (state.continuous[2])**(1. - self.constants.iota) / (1. - self.constants.iota)
 
+    # implements state transition function
+    def transition(self,state: State, control, noise):
+
+    def check_feasible(self,state: State, control):
+        c,l = control.consumption,control.labor
+        sc, sd = state.continuous, state.discrete
+        mp, mc = self.parameters, self.constants
+        log_skill = mp.alpha_0 + mp.alpha* + mp.xi_2*sd[1]
+        earnings = sc[1]*math.exp()
+
+
     @property
     def size_discrete(self):
         return (9,2,2)
