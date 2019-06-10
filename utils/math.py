@@ -3,6 +3,7 @@ import itertools
 import functools
 from operator import mul
 import numpy as np
+import copy
 from scipy.optimize import fminbound
 
 # Maximize function V on interval [a,b]
@@ -16,6 +17,11 @@ def maximizer(V, a, b):
 def list_prod(lst):
     return functools.reduce(mul,lst)
 
+def ndlist(init, *args):
+    dp = init
+    for x in reversed(args):
+        dp = [copy.deepcopy(dp) for _ in range(x)]
+    return dp
 
 def lspaces_to_grid(*lps):
     grd = itertools.product(*lps)
