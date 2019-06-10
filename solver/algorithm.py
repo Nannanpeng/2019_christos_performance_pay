@@ -2,33 +2,28 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy as np
 import math
-import functools
-import itertools
-from operator import mul
+
 
 from .models import State
 from .stats import MultiDiscretizationLI
+from utils import math as um
 
-
-def lspaces_to_grid(*lps):
-    grd = itertools.product(*lps)
-    grd = [list(p) for p in grd]
-    grd = np.array(grd)
-    return grd
 
 
 class VFA_LI(object):
     def __init__(self,T,discrete_shape,grid):
         self._discrete_shape = discrete_shape
         self._discrete_ndim = len(discrete_shape)
-        self._vfarray = [None]*functools.reduce(mul,discrete_shape)
-
+        self._vfarray = [[None]*um.list_prod(discrete_shape)]*T
+        print(self._vfarray)
 
     def __call__(self,state: State):
-        pass
+        t = state.t
+        ds = state.discrete
+        dc = state.continuous
+        idx = um.tuple_to_idx(ds)
+        vf = self._vfarray[t][idx]
 
-    def _discrete_to_idx(self,discrete_state):
-        pass
 
 
 
@@ -41,7 +36,7 @@ def solve(model):
     h_grid = np.linspace(0,30,3) # human capital, growth is upper bounded by 1 each time period.
     a_grid = np.exp(np.linspace(0,math.log(1.2e6),3))
 
-    b = grid_from_linspaces(z_grid,h_grid,a_grid)
+    b = um.grid_from_linspaces(z_grid,h_grid,a_grid)
     print(b)
 
     # values for terminal state

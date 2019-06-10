@@ -3,17 +3,12 @@
 
 import argparse
 import yaml
-from .transform import yaml_to_model
+from .io import yaml_to_model, load_yaml
 
-__all__ = ['load_yaml','make_directory','run_config_from_args','fit_model_argparser']
+__all__ = ['make_directory','run_config_from_args','fit_model_argparser']
 
 
-def load_yaml(file_path):
-    with open(file_path, 'r') as stream:
-        try:
-            return yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
+
 
 def make_directory(dirpath):
     os.makedirs(dirpath,exist_ok=True)
