@@ -1,7 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
-from scipy.interpolate import LinearNDInterpolator
 from collections import namedtuple
 
 import utils
