@@ -36,7 +36,8 @@ class VFA_LI(object):
         vf = self._vfarray[t][idx]
         if vf is not None:
             raise RuntimeError("already added values at this idx and time...")
-        self._vfarray[t][idx] = LinearNDInterpolator(self._grid,vals)
+        # uses rescaling because dims may have very different scales
+        self._vfarray[t][idx] = LinearNDInterpolator(self._grid,vals,rescale=True)
 
 
 
