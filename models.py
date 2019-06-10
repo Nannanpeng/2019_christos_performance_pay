@@ -28,8 +28,14 @@ class BasePPModel(object):
     def ndim_continuous(self):
         raise NotImplementedError('Need to define continuous shape')
 
+    @property
+    def num_discrete_actions(self):
+        raise NotImplementedError('Need to define num discrete actions')
+
+
     def discrete_space_iter(self):
         return itertools.product(*[range(n) for n in self.size_discrete])
+
 
 class SimplePPModel(BasePPModel):
     """
@@ -87,6 +93,16 @@ class SimplePPModel(BasePPModel):
     def ndim_continuous(self):
         return 3
 
+    @property
+    def num_discrete_actions(self):
+        return 3
+
+    def generate_noise(self,num_samples,pp=False,evd=False):
+        if pp or evd:
+            raise RuntimeError('Sampling pp or evd not supported yet')
+        # q = np.random.binomial(1,self.constants)
+
+        return np.random.normal(0,self.constants.var_omega,num_samples)
 
 
 class GenericPPModel(BasePPModel):

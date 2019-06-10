@@ -51,6 +51,8 @@ class Multi_LI_VFA(object):
 class Multi_LI_QFA(object):
     """
     Implements value function approximation. Represent state-action values (for a discrete set of actions).
+
+    These state-action values also are referred to as "specific value functions".
     """
     def __init__(self,T,discrete_shape,K,grid):
         self._discrete_shape = discrete_shape

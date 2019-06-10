@@ -5,7 +5,15 @@ name: SimplifiedModel
 dynamics:
   utilityFunction: simple_utility
 constants:
-   # Inter-temporal Risk Aversion
+  # autoregressive component of the earnings process
+  rho:
+    kind: scalar
+    value: 0.97 # NOTE: Really should use two values, based on if PP or not...
+  # variance of noise in log earnings process
+  var_omega:
+    kind: scalar
+    value: 0.06
+  # Inter-temporal Risk Aversion
   iota:
     kind: scalar
     value: 0.5

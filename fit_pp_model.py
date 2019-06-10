@@ -5,6 +5,7 @@ import time
 import numpy as np
 from collections import namedtuple
 import yaml
+import random
 
 import utils
 import solver
@@ -79,6 +80,7 @@ def fit_model(run_config):
 
 
 if __name__ == "__main__":
+    random.seed(12345678)
     parser = utils.run.fit_model_argparser()
     args = parser.parse_args()
     run_config = utils.run.run_config_from_args(args)
@@ -86,4 +88,5 @@ if __name__ == "__main__":
     # a = utils.load_model_from_yaml('./specs/simplified.yaml')
     # print(run_config['model'])
     model = models.SimplePPModel(run_config['model'])
+    print(model.constants)
     solver.algorithm.solve(model)
