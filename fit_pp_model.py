@@ -8,6 +8,7 @@ import yaml
 
 import utils
 import solver
+import models
 
 def configure_run(run_config):
     vf_result_path = os.path.join(run_config['odir'],'value_function.npy')
@@ -84,5 +85,5 @@ if __name__ == "__main__":
     # fit_model(run_config)
     # a = utils.load_model_from_yaml('./specs/simplified.yaml')
     # print(run_config['model'])
-    model = solver.models.SimplePPModel(run_config['model'])
+    model = models.SimplePPModel(run_config['model'])
     solver.algorithm.solve(model)

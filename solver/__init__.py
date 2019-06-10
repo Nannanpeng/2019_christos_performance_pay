@@ -1,6 +1,5 @@
 # from . import utility
-from . import models
-from . import stats
 from . import algorithm
+from . import approximation
 
 # __all__ = ['SimplePPModel','GenericPPModel','utility','dynamics','stats']

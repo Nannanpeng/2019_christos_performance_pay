@@ -50,7 +50,6 @@ class SimplePPModel(BasePPModel):
         super().__init__(spec)
         self.T = 31 # T = 31 is terminal state. TODO: This belongs elsewhere
 
-
     # shocks are the random part of the system dynamics
     # some transitions may not be deterministic, but could be draws from a multinomial
     # distribution. A list of tuples is returned with successor states and the corresponding
@@ -60,7 +59,6 @@ class SimplePPModel(BasePPModel):
         tl = []
         return tl
 
-
     # need to pass in current state, the selected control, and any random shocks
     # TODO: Check to ensure borrowing constraint is satisfied
     def reward(self,state, control, shocks):
@@ -68,7 +66,6 @@ class SimplePPModel(BasePPModel):
             return self._terminal_utility(state)
         if state.t > self.T:
             raise RuntimeError('Requested time greater than T')
-
         return self.reward_noshock(state,control) + shocks[0]
 
 
@@ -76,13 +73,11 @@ class SimplePPModel(BasePPModel):
         u = control.consumption**(1. - self.constants.iota) / (1. - self.constants.iota)
         u += - self.parameters.chi * (control.labor**(1+self.parameters.psi)) / (1+self.parameters.psi)
         u += shocks[0]
-
         return u
 
     # Simplifying assumption -- consume all wealth in final period
     def _terminal_utility(self,state):
         return (state.continuous[2])**(1. - self.constants.iota) / (1. - self.constants.iota)
-
 
     @property
     def size_discrete(self):
