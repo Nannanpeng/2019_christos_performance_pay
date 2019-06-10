@@ -10,4 +10,20 @@ class TestUtils(unittest.TestCase):
         idx = um.tuple_to_idx(tp,ds)
         tp2 = um.idx_to_tuple(idx,ds)
 
-        self.assertEqual(tp,tp2,"%s should equal %s" % (str(tp),str(tp2)))
+        self.assertEqual(tp,tp2,"%s -> %d -> %s" % (str(tp),idx,str(tp2)))
+
+    def test_tuple_to_idx2(self):
+        ds = (2,8,7)
+        tp = (0,3,4)
+        idx = um.tuple_to_idx(tp,ds)
+        tp2 = um.idx_to_tuple(idx,ds)
+
+        self.assertEqual(tp,tp2,"%s -> %d -> %s" % (str(tp),idx,str(tp2)))
+
+    def test_tuple_to_idx3(self):
+        ds = (2,8,7)
+        tp = (1,6,2)
+        idx = um.tuple_to_idx(tp,ds)
+        tp2 = um.idx_to_tuple(idx,ds)
+
+        self.assertEqual(tp,tp2,"%s -> %d -> %s" % (str(tp),idx,str(tp2)))

@@ -33,8 +33,9 @@ def tuple_to_idx(tp,shape):
 
 def idx_to_tuple(idx,shape):
     lst = []
-    for i in reversed(range(len(shape))):
-        step = list_prod(shape[0:i]) if i > 0 else 1
+    ndim = len(shape)
+    for i in range(ndim):
+        step = list_prod(shape[i+1:ndim]) if i < (ndim-1) else 1
         val = idx // step
         idx = idx - val*step
         lst.append(val)
