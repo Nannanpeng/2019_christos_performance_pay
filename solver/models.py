@@ -1,10 +1,13 @@
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
+import itertools
 from collections import namedtuple
 
 import utils
 
+State = namedtuple('State',['t','discrete','continuous'])
+PPControl = namedtuple('PPControl',['consumption','labor','job'])
 
 class BasePPModel(object):
 
@@ -17,10 +20,16 @@ class BasePPModel(object):
         self.constants = utils.struct_factory('%s_Constants' % spec['name'],spec['constants'])
         self.parameters = utils.struct_factory('%s_Parameters' % spec['name'],spec['parameters'])
 
+    @property
+    def size_discrete(self):
+        raise NotImplementedError('Need to define discrete shape')
 
+    @property
+    def ndim_continuous(self):
+        raise NotImplementedError('Need to define continuous shape')
 
-State = namedtuple('State',['t','discrete','continuous'])
-PPControl = namedtuple('PPControl',['consumption','labor','job'])
+    def discrete_space_iter(self):
+        return itertools.product(*[range(n) for n in self.size_discrete])
 
 class SimplePPModel(BasePPModel):
     """
@@ -48,10 +57,7 @@ class SimplePPModel(BasePPModel):
     # probabilities.
     # shocks is a list (in this case length 1), of values
     def transition_list(self,state: State, control: PPControl, shocks = [0.0]):
-
         tl = []
-
-
         return tl
 
 
@@ -73,13 +79,18 @@ class SimplePPModel(BasePPModel):
 
         return u
 
-
-
     # Simplifying assumption -- consume all wealth in final period
     def _terminal_utility(self,state):
-        print('here',state,1. - self.constants.iota)
         return (state.continuous[2])**(1. - self.constants.iota) / (1. - self.constants.iota)
 
+
+    @property
+    def size_discrete(self):
+        return (9,2,2)
+
+    @property
+    def ndim_continuous(self):
+        return 3
 
 
 

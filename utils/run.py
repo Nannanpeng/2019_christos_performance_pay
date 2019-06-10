@@ -2,7 +2,6 @@
 # Mainly for configuration management
 
 import argparse
-import yaml
 from .io import yaml_to_model, load_yaml
 
 __all__ = ['make_directory','run_config_from_args','fit_model_argparser']
