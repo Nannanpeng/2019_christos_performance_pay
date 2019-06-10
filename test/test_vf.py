@@ -20,19 +20,18 @@ class TestValueFunction(unittest.TestCase):
         state = State(4,(1,0),(0.5,0.5))
         vals = np.array([0.5,0.5,0.5,0.5])
         self.vfa.add_values(state.t,state.discrete,vals)
-        self.assertRaises(RuntimeError, self.vfa.add_values, state.t,state.discrete,vals)
-
+        self.assertRaises(RuntimeError, self.vfa.add_values, state.t, state.discrete, vals)
 
     def test_vfa_predict(self):
         state = State(4,(1,0),(0.5,0.5))
         vals = np.array([0.5,0.5,0.5,0.5])
-        self.vfa.add_values(state.t,state.discrete,vals)
+        self.vfa.add_values(state.t, state.discrete, vals)
         estimate = self.vfa(state)
         self.assertEqual(estimate,0.5)
 
     def test_vfa_predict_oob(self):
         state = State(4,(1,0),(-1.0,0.5))
         vals = np.array([0.5,0.5,0.5,0.5])
-        self.vfa.add_values(state.t,state.discrete,vals)
+        self.vfa.add_values(state.t, state.discrete, vals)
         estimate = self.vfa(state)
-        self.assertTrue(math.isnan(estimate))
+        self.assertEqual(0.5,estimate)
