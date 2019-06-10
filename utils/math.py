@@ -27,10 +27,8 @@ def tuple_to_idx(tp,shape):
     idx = 0
     step = 1
     for dim,val in zip(reversed(shape),reversed(tp)):
-        print(dim,val)
         idx = idx + step*val
         step = step * dim
-        print('step %d' % step)
     return idx
 
 def idx_to_tuple(idx,shape):
@@ -39,7 +37,6 @@ def idx_to_tuple(idx,shape):
         step = list_prod(shape[0:i]) if i > 0 else 1
         val = idx // step
         idx = idx - val*step
-        print(val,step)
         lst.append(val)
 
     return tuple(lst)

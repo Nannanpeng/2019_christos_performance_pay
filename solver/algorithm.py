@@ -15,15 +15,25 @@ class VFA_LI(object):
         self._discrete_shape = discrete_shape
         self._discrete_ndim = len(discrete_shape)
         self._vfarray = [[None]*um.list_prod(discrete_shape)]*T
-        print(self._vfarray)
+        self._grid = grid
 
     def __call__(self,state: State):
         t = state.t
         ds = state.discrete
         dc = state.continuous
-        idx = um.tuple_to_idx(ds)
+        idx = um.tuple_to_idx(ds,self._discrete_shape)
         vf = self._vfarray[t][idx]
+        if vf is None:
+            raise RuntimeError('Value function not estimated for time t=%d at discrete state %s' % (t,str(ds)))
 
+        return vf(state.continuous)
+
+    def add_values(self,t,ds,vals):
+        idx = um.tuple_to_idx(ds,self._discrete_shape)
+        assert self._grid.shape[0] == len(vals), "vals should have same length as number of grid points"
+        vf = self._vfarray[t][idx]
+        assert vf is None, "already added values at this idx and time..."
+        self._vfarray[t][idx] = LinearNDInterpolator(grid,vals)
 
 
 

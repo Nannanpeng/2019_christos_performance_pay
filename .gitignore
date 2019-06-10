@@ -48,4 +48,4 @@ coverage.xml
 
 # Experimental Results
 out/
-tester.py
+example.py
