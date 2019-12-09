@@ -1,0 +1,57 @@
+{
+	"folders": [
+		{
+            "path": ".",
+        },
+        {
+            "path": "../writing",
+        },
+        {
+            "path": "../external",
+        },
+	],
+	"settings": {
+        "python.formatting.provider": "yapf",
+        "[typescript]": {
+            "editor.tabSize": 2
+        },
+        "[javascript]": {
+            "editor.tabSize": 2
+        },        
+        "[python]": {
+            "editor.tabSize": 4
+        },
+        "[latex]": {
+            "editor.wordWrap": "on"
+        },
+		"editor.fontSize": 15,
+		"search.followSymlinks": false,
+		"files.associations": {
+			"Tiltfile": "starlark",
+			"*.bazel": "starlark"
+        },
+        "files.exclude": {
+            "**/.git/objects/**": true,
+            "**/.git/subtree-cache/**": true,
+            // "**/dist/**": true,
+            "**/node_modules/**": true,
+            "**/tmp/**": true
+        },
+        "files.watcherExclude": {
+            "**/.git/objects/**": true,
+            "**/.git/subtree-cache/**": true,
+            "**/dist/**": true,
+            "**/bazel-*/**": true,
+            "**/node_modules/**": true,
+            "**/tmp/**": true
+        },
+        "search.exclude": {
+            "**/node_modules/**": true,
+            "**/dist/**": true,
+            "**/tmp/**": true,
+            "**/bazel-*/**": true,
+            "**/.git/objects/**": true,
+            "**/.git/subtree-cache/**": true
+        }
+	}
+}
