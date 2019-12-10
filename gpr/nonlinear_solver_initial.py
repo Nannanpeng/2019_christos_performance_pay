@@ -73,8 +73,6 @@ def initial(k_init, n_agents, params):
     X[n_agents:2 * n_agents] = lab_init
     X[2 * n_agents:3 * n_agents] = inv_init
 
-    #X=np.ones(nvars)
-
     # Create callback functions
     def eval_f(X):
         out = EV_F(X, k_init, n_agents, params)
@@ -105,6 +103,12 @@ def initial(k_init, n_agents, params):
             derivative_test='first-order',
             hessian_approximation="limited-memory")
             # print_level=0)
+
+    # x: Solution of the primal variables
+    # z_l, z_u: Solution of the bound multipliers
+    # constraint_multipliers: Solution of the constraint multipliers
+    # obj: Objective value
+    # status: Exit Status
     z_l = np.zeros(N)
     z_u = np.zeros(N)
     constraint_multipliers = np.zeros(M)
@@ -112,13 +116,6 @@ def initial(k_init, n_agents, params):
                                mult_g=constraint_multipliers,
                                mult_x_L=z_l,
                                mult_x_U=z_u)
-
-    # nlp.close()
-    # x: Solution of the primal variables
-    # z_l, z_u: Solution of the bound multipliers
-    # constraint_multipliers: Solution of the constraint multipliers
-    # obj: Objective value
-    # status: Exit Status
 
     # Unpack Consumption, Labor, and Investment
     c = x[:n_agents]

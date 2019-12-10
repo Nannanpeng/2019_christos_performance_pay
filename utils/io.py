@@ -14,8 +14,10 @@ def struct_factory(name, dictionary):
 
 
 def _load_value(kind, val):
-    if kind == 'scalar':
+    if kind == 'float':
         return float(val)
+    if kind == 'int':
+        return int(val)
     if kind == 'array':
         return np.array(val)
     if kind == 'csv':
@@ -23,19 +25,25 @@ def _load_value(kind, val):
 
 
 def yaml_to_model(model_dict):
-    constants = {
-        k: _load_value(v['kind'], v['value'])
-        for (k, v) in model_dict['constants'].items()
-    }
-    parameters = {
-        k: _load_value(v['kind'], v['value'])
-        for (k, v) in model_dict['parameters'].items()
-    }
+    constants, parameters = None, None
+    name = model_dict['name']
+    if 'constants' in model_dict:
+        constants = {
+            k: _load_value(v['kind'], v['value'])
+            for (k, v) in model_dict['constants'].items()
+        }
+        constants = struct_factory('%s_constants' % name, constants)
+    if 'parameters' in model_dict:
+        parameters = {
+            k: _load_value(v['kind'], v['value'])
+            for (k, v) in model_dict['parameters'].items()
+        }
+        parameters = struct_factory('%s_params' % name,parameters)
     return {
         'constants': constants,
         'name': model_dict['name'],
         'parameters': parameters,
-        'dynamics': model_dict['dynamics']
+        'dynamics': model_dict['dynamics'] if 'dynamics' in model_dict else None
     }
 
 

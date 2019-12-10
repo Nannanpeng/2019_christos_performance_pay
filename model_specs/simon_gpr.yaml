@@ -1,28 +1,73 @@
 # Simon Scheidegger Model Parameters
 
+name: GPR_Simon
 parameters:
   # Tuning parameters
-  n_agents: 2
-  No_samples: 20
-  numstart: 1
-  numits: 7
-  filename: "restart/restart_file_step_"
+  n_agents:
+    kind: int 
+    value: 2
+  No_samples:
+    kind: int
+    value: 20
+  numstart:
+    kind: int
+    value: 1
+  numits:
+    kind: int
+    value: 7
+  # filename: "restart/restart_file_step_"
   # Model params
-  beta: 0.8
-  rho: 0.95
-  zeta: 0.5
-  psi: 0.36
-  gamma: 2.0 
-  delta: 0.025
-  eta: 1.0
-  big_A: 0.694
-  k_bar: 0.2
-  k_up: 3.0
-  range_cube: 2.8
-  c_bar: 0.01
-  c_up: 10.0
-  l_bar: 0.01
-  l_up: 10.0
-  inv_bar: 0.01
-  inv_up: 10.0
-  No_samples_postprocess: 20
+  beta:
+    kind: float
+    value: 0.8
+  rho: 
+    kind: float
+    value: 0.95
+  zeta: 
+    kind: float
+    value: 0.5
+  psi: 
+    kind: float
+    value: 0.36
+  gamma: 
+    kind: float
+    value: 2.0 
+  delta: 
+    kind: float
+    value: 0.025
+  eta: 
+    kind: float
+    value: 1.0
+  big_A: 
+    kind: float
+    value: 0.694
+  k_bar: 
+    kind: float
+    value: 0.2
+  k_up: 
+    kind: float
+    value: 3.0
+  range_cube: 
+    kind: float
+    value: 2.8
+  c_bar: 
+    kind: float
+    value: 0.01
+  c_up: 
+    kind: float
+    value: 10.0
+  l_bar: 
+    kind: float
+    value: 0.01
+  l_up: 
+    kind: float
+    value: 10.0
+  inv_bar: 
+    kind: float
+    value: 0.01
+  inv_up: 
+    kind: float
+    value: 10.0
+  No_samples_postprocess:
+    value: 20
+    kind: int

@@ -87,6 +87,7 @@ class SimplePPModel(BasePPModel):
 
     # implements state transition function
     def transition(self,state: State, control, noise):
+        pass
 
     def check_feasible(self,state: State, control):
         c,l = control.consumption,control.labor

@@ -14,12 +14,7 @@
 #     Simon Scheidegger, 01/19
 #======================================================================
 
-import gpr.nonlinear_solver_initial as solver  #solves opt. problems for terminal VF
-import gpr.nonlinear_solver_iterate as solviter  #solves opt. problems during VFI
-import gpr.interpolation as interpol  #interface to sparse grid library/terminal VF
-import gpr.interpolation_iter as interpol_iter  #interface to sparse grid library/iteration
-import gpr.postprocessing as post  #computes the L2 and Linfinity error of the model
-import numpy as np
+
 import utils
 
 

@@ -1,7 +1,7 @@
 # Simplified Model
 # Described in "Makridis - Model Subset"
 
-name: Performance Pay Model
+name: PerformancePay
 externalParams:
   riskAversion: 1.5 # Based on preferred macroeconomic estimates
   discountFactor: 0.98 # Because time steps are 1 year

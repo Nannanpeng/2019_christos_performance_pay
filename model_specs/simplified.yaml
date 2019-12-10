@@ -7,32 +7,32 @@ dynamics:
 constants:
   # autoregressive component of the earnings process
   rho:
-    kind: scalar
+    kind: float
     value: 0.97 # NOTE: Really should use two values, based on if PP or not...
   # variance of noise in log earnings process
   var_omega:
-    kind: scalar
+    kind: float
     value: 0.06
   # Inter-temporal Risk Aversion
   iota:
-    kind: scalar
+    kind: float
     value: 0.5
     # value: 1.5 # Based on preferred macroeconomic estimates <- Not sure this is right, maybe a typo?
   # Discount Factor
   beta:
-    kind: scalar
+    kind: float
     value: 0.98 # Selected because time steps are 1 year
   # Risk Free Interest Rate
   r:
-    kind: scalar
+    kind: float
     value: 0.04 # Chosen to match US Treasury bonds
   # Human Capital Depreciation
   xi:
-    kind: scalar
+    kind: float
     value: -0.05 # Sourced from Hendricks, 2013
   # Borrowing Limit
   B:
-    kind: scalar
+    kind: float
     value: 0.0
     # value: 22000.0 # 22,000 -- 95th percentile of savings in NLSY97 data
   # Performance pay probabilities by job and age, estimated from NLSY97 data
@@ -42,39 +42,39 @@ constants:
 parameters:
   # Disutility of labor
   chi:
-    kind: scalar
+    kind: float
     value: 2.13
   # Labor elasticity
   psi:
-    kind: scalar
+    kind: float
     value: 0.50
   # Learning curvature
   gamma_l:
-    kind: scalar
+    kind: float
     value: 0.7
   # Learning complementarity
   gamma_h:
-    kind: scalar
+    kind: float
     value: 0.0
   # General skill depreciation
   xi_1:
-    kind: scalar
+    kind: float
     value: -0.05
   # Specific skill depreciation
   xi_2:
-    kind: scalar
+    kind: float
     value: -0.08
   # Price shock variance
   var_ps:
-    kind: scalar
+    kind: float
     value: 0.03
   # skill price process constant
   alpha_0:
-    kind: scalar
+    kind: float
     value: 2.72
   # Performance pay premium
   alpha:
-    kind: scalar
+    kind: float
     value: 0.28
   # Job specific skill price premium. Denoted as sigma^j in write-up
   p_job:
