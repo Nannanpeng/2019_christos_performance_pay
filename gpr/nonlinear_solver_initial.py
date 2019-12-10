@@ -18,16 +18,8 @@ import ipyopt
 def initial(k_init, n_agents, params):
     # IPOPT PARAMETERS below
 
-    nvars = 3 * n_agents
-    N = nvars  # number of vars
+    N = 3 * n_agents  # number of vars
     M = 3 * n_agents + 1  # number of constraints
-    # NELE_JAC = N * M
-    # NELE_HESS = (N**2 - N) / 2 + N  # number of non-zero entries of Hess matrix
-
-    # check that number of nonlinear equations is consistent
-    if (N != 3 * n_agents):
-        print("there is an error with the number of non-lin eqs!")
-        quit
 
     # Vector of variables -> solution of non-linear equation system
     X = np.empty(N)
@@ -83,40 +75,45 @@ def initial(k_init, n_agents, params):
 
     #X=np.ones(nvars)
 
-    # Create ev_f, eval_f, eval_grad_f, eval_g, eval_jac_g for given k_init and n_agent
+    # Create callback functions
     def eval_f(X):
-        return EV_F(X, k_init, n_agents)
+        out = EV_F(X, k_init, n_agents, params)
+        return out
 
-    def eval_grad_f(X):
-        return EV_GRAD_F(X, k_init, n_agents)
+    def eval_grad_f(X, out):
+        out[()] = EV_GRAD_F(X, k_init, n_agents, params)
+        return out
 
-    def eval_g(X):
-        return EV_G(X, k_init, n_agents)
+    def eval_g(X, out):
+        out[()] = EV_G(X, k_init, n_agents,params)
+        return out
 
-    def eval_jac_g(X):
-        return EV_JAC_G(X, k_init, n_agents)
+    def eval_jac_g(X, out):
+        out[()] = EV_JAC_G(X, k_init, n_agents,params)
+        return out
+
+    ipyopt.set_loglevel(ipyopt.LOGGING_DEBUG)
 
     # First create a handle for the Ipopt problem
-    nlp = ipyopt.Problem(nvars, X_L, X_U, M, G_L, G_U,
-                         sparsity_jac_g(N, M), sparsity_hess(N), eval_f,
-                         eval_grad_f, eval_g, eval_jac_g)
-    # nlp.num_option("obj_scaling_factor", -1.00)
-    # nlp.num_option("tol", 1e-6)
-    # nlp.num_option("acceptable_tol", 1e-5)
-    # nlp.str_option("derivative_test", "first-order")
-    # nlp.str_option("hessian_approximation", "limited-memory")
-    # nlp.int_option("print_level", 0)
-    nlp.set(
-        obj_scaling_factor= -1.00,
-        tol = 1e-6,
-        acceptable_tol=1e-5,
-        derivative_test = 'first-order',
-        hessian_approximation = "limited-memory",
-        print_level = 0
-    )
+    nlp = ipyopt.Problem(N, X_L, X_U, M, G_L, G_U, sparsity_jac_g(N, M),
+                         sparsity_hess(N), eval_f, eval_grad_f, eval_g,
+                         eval_jac_g)
 
-    x, z_l, z_u, constraint_multipliers, obj, status = nlp.solve(X)
-    nlp.close()
+    nlp.set(obj_scaling_factor=-1.00,
+            tol=1e-6,
+            acceptable_tol=1e-5,
+            derivative_test='first-order',
+            hessian_approximation="limited-memory")
+            # print_level=0)
+    z_l = np.zeros(N)
+    z_u = np.zeros(N)
+    constraint_multipliers = np.zeros(M)
+    x, obj, status = nlp.solve(X,
+                               mult_g=constraint_multipliers,
+                               mult_x_L=z_l,
+                               mult_x_U=z_u)
+
+    # nlp.close()
     # x: Solution of the primal variables
     # z_l, z_u: Solution of the bound multipliers
     # constraint_multipliers: Solution of the constraint multipliers
