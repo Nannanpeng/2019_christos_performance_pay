@@ -3,11 +3,10 @@
 
 import argparse
 import os
+import time
 from .io import yaml_to_model, load_yaml
 
 __all__ = ['make_directory','run_config_from_args','fit_model_argparser']
-
-
 
 
 def make_directory(dirpath):
@@ -46,7 +45,7 @@ def fit_model_argparser():
 
 def gpr_argparser():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-o", "--odir", type=str, default='out', help="output directory")
+    parser.add_argument("-o", "--odir", type=str, default=None, help="output directory")
     parser.add_argument("-d", "--debug", action="store_true", help="debug")
     parser.add_argument("-u",'--max_updates', type=float, default=1e4, help="max number of iterations")
     parser.add_argument("-e",'--tolerance', type=float, default=1e-4, help="error tolerance")

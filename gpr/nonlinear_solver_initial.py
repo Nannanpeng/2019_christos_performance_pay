@@ -6,11 +6,13 @@
 #
 #     Simon Scheidegger, 11/16 ; 07/17; 01/19
 #======================================================================
+import logging
+logger = logging.getLogger(__name__)
+import numpy as np
+import ipyopt
 
 # from parameters import *
 from .ipopt_wrapper import EV_F, EV_GRAD_F, EV_G, EV_JAC_G, sparsity_hess, sparsity_jac_g
-import numpy as np
-import ipyopt
 
 #======================================================================
 

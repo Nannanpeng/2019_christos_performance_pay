@@ -10,19 +10,23 @@
 #======================================================================
 
 import numpy as np
-# from parameters import *
-from . import nonlinear_solver_initial as solver
+import logging
+import sys
+logger = logging.getLogger(__name__)
+logger.write = lambda msg: logger.info(msg.decode('utf-8')) if msg.strip() != '' else None
 import pickle
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel, Matern
 
-#======================================================================
+# from parameters import *
+from . import nonlinear_solver_initial as solver
+from utils import stdout_redirector
 
 
-def GPR_init(iteration, params):
 
-    print("hello from step ", iteration)
+def GPR_init(iteration, params, out_dir):
+    logger.info("hello from step %d" % iteration)
 
     #fix seed
     np.random.seed(666)
@@ -34,8 +38,9 @@ def GPR_init(iteration, params):
     y = np.zeros(params.No_samples, float)  # training targets
 
     # solve bellman equations at training points
-    for iI in range(len(Xtraining)):
-        y[iI] = solver.initial(Xtraining[iI], params.n_agents, params)[0]
+    with stdout_redirector(logger):
+        for iI in range(len(Xtraining)):
+            y[iI] = solver.initial(Xtraining[iI], params.n_agents, params)[0]
 
     #for iI in range(len(Xtraining)):
     #print Xtraining[iI], y[iI]
@@ -55,13 +60,8 @@ def GPR_init(iteration, params):
     gp.fit(Xtraining, y)
 
     #save the model to a file
-    output_file = params.filename + str(iteration) + ".pcl"
-    print(output_file)
+    output_file = out_dir + params.filename + str(iteration) + ".pcl"
+    logger.info('Output file: %s' % output_file)
     with open(output_file, 'wb') as fd:
         pickle.dump(gp, fd, protocol=pickle.HIGHEST_PROTOCOL)
-        print("data of step ", iteration, "  written to disk")
-        print(" -------------------------------------------")
-    fd.close()
-
-
-#======================================================================
+        logger.info("data of step %d  written to disk" % i)
