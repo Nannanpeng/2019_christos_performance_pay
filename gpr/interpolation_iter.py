@@ -30,7 +30,7 @@ def GPR_iter(params, iteration, checkpoint_in, checkpoint_out):
     with open(restart_data, 'rb') as fd_old:
         gp_old = pickle.load(fd_old)
         print("data from iteration step ", iteration - 1, "loaded from disk")
-    fd_old.close()
+
 
     ##generate sample aPoints
     np.random.seed(666)  #fix seed

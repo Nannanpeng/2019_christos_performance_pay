@@ -7,7 +7,6 @@
 #======================================================================
 
 import numpy as np
-# from parameters import *
 import pickle
 import logging
 logger = logging.getLogger(__name__)
@@ -19,11 +18,11 @@ from sklearn.gaussian_process.kernels import (RBF, Matern, RationalQuadratic,
 
 #======================================================================
 # Routine compute the errors
-def ls_error(n_agents, t1, t2, num_points, out_dir):
-    with open(out_dir + 'errors.txt', 'w') as file:
+def ls_error(n_agents, t1, t2, num_points, restart_fstr, params, output_path):
+    with open(output_path, 'w') as file:
         # np.random.seed(0)
         unif = np.random.rand(num_points, n_agents)
-        k_sample = k_bar + (unif) * (k_up - k_bar)
+        k_sample = params.k_bar + (unif) * (params.k_up - params.k_bar)
         to_print = np.empty((1, 3))
 
         for i in range(t1, t2 - 1):
@@ -31,13 +30,13 @@ def ls_error(n_agents, t1, t2, num_points, out_dir):
             diff = 0
 
             # Load the model from the previous iteration step
-            restart_data = filename + str(i) + ".pcl"
+            restart_data = restart_fstr % (i)
             with open(restart_data, 'rb') as fd_old:
                 gp_old = pickle.load(fd_old)
                 logger.info("data from iteration step %d loaded from disk" % i)
 
             # Load the model from the previous iteration step
-            restart_data = filename + str(i + 1) + ".pcl"
+            restart_data = restart_fstr % (i+1)
             with open(restart_data, 'rb') as fd_new:
                 gp_new = pickle.load(fd_new)
                 logger.info("data from iteration step %d loaded from disk" % (i+1))

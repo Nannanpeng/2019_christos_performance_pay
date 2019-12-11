@@ -13,7 +13,10 @@ import numpy as np
 #=======================================================================
 #   Objective Function to start VFI (in our case, the value function)
 
-IPOptCallback = namedtuple('IPOptCallback',['ev_f','ev_grad_f','ev_g','ev_jac_g','hess_sparsity','jac_g_sparsity'])
+IPOptCallback = namedtuple('IPOptCallback', [
+    'ev_f', 'ev_grad_f', 'ev_g', 'ev_jac_g', 'hess_sparsity', 'jac_g_sparsity'
+])
+
 
 def EV_F(X, k_init, n_agents, params, *args):
     # Extract Variables
@@ -43,16 +46,15 @@ def V_INFINITY(k=[], params=None):
 
 
 def EV_F_ITER(X, k_init, n_agents, params, gp_old, *args):
-
     # Extract Variables
     cons = X[0:n_agents]
     lab = X[n_agents:2 * n_agents]
     inv = X[2 * n_agents:3 * n_agents]
 
-    knext = (1 - delta) * k_init + inv
+    knext = (1 - params.delta) * k_init + inv
 
     #transform to comp. domain of the model
-    knext_cube = model.box_to_cube(knext)
+    knext_cube = model.box_to_cube(knext, params)
 
     # initialize correct data format for training point
     s = (1, n_agents)
@@ -62,7 +64,7 @@ def EV_F_ITER(X, k_init, n_agents, params, gp_old, *args):
     # interpolate the function, and get the point-wise std.
     V_old, sigma_test = gp_old.predict(Xtest, return_std=True)
 
-    VT_sum = utility(cons, lab) + beta * V_old
+    VT_sum = model.utility(cons, lab, params) + params.beta * V_old
 
     return VT_sum
 
@@ -115,19 +117,19 @@ def EV_GRAD_F_ITER(X, k_init, n_agents, params, gp_old, *args):
 
         if (xAdj[ixN] - h >= 0):
             xAdj[ixN] = X[ixN] + h
-            fx2 = EV_F_ITER(xAdj, k_init, n_agents, gp_old)
+            fx2 = EV_F_ITER(xAdj, k_init, n_agents, params, gp_old)
 
             xAdj[ixN] = X[ixN] - h
-            fx1 = EV_F_ITER(xAdj, k_init, n_agents, gp_old)
+            fx1 = EV_F_ITER(xAdj, k_init, n_agents, params, gp_old)
 
             GRAD[ixN] = (fx2 - fx1) / (2.0 * h)
 
         else:
             xAdj[ixN] = X[ixN] + h
-            fx2 = EV_F_ITER(xAdj, k_init, n_agents, gp_old)
+            fx2 = EV_F_ITER(xAdj, k_init, n_agents, params, gp_old)
 
             xAdj[ixN] = X[ixN]
-            fx1 = EV_F_ITER(xAdj, k_init, n_agents, gp_old)
+            fx1 = EV_F_ITER(xAdj, k_init, n_agents, params, gp_old)
             GRAD[ixN] = (fx2 - fx1) / h
 
     return GRAD
@@ -182,8 +184,9 @@ def EV_G_ITER(X, k_init, n_agents, params):
         G[i + n_agents] = lab[i]
         G[i + 2 * n_agents] = inv[i]
 
-    f_prod = output_f(k_init, lab)
-    Gamma_adjust = 0.5 * params.zeta * k_init * ((inv / k_init - params.delta)**2.0)
+    f_prod = model.output_f(k_init, lab, params)
+    Gamma_adjust = 0.5 * params.zeta * k_init * (
+        (inv / k_init - params.delta)**2.0)
     sectors_sum = cons + inv - params.delta * k_init - (f_prod - Gamma_adjust)
     G[3 * n_agents] = np.sum(sectors_sum)
 
@@ -233,7 +236,7 @@ def EV_JAC_G_ITER(X, k_init, n_agents, params):
         for ixN in range(N):
             xAdj = np.copy(X)
             xAdj[ixN] = xAdj[ixN] + h
-            gx2 = EV_G_ITER(xAdj, k_init, n_agents)
+            gx2 = EV_G_ITER(xAdj, k_init, n_agents, params)
             A[ixN + ixM * N] = (gx2[ixM] - gx1[ixM]) / h
     return A
 
@@ -266,21 +269,17 @@ def sparsity_hess(N):
 
     return (A1, A2)
 
-initial_callbacks = IPOptCallback(
-    ev_f = EV_F,
-    ev_grad_f = EV_GRAD_F,
-    ev_g = EV_G,
-    ev_jac_g = EV_JAC_G,
-    hess_sparsity = sparsity_hess,
-    jac_g_sparsity = sparsity_jac_g
-)
 
-iter_callbacks = IPOptCallback(
-    ev_f = EV_F_ITER,
-    ev_grad_f = EV_GRAD_F_ITER,
-    ev_g = EV_G_ITER,
-    ev_jac_g = EV_JAC_G_ITER,
-    hess_sparsity = sparsity_hess,
-    jac_g_sparsity = sparsity_jac_g
-)
+initial_callbacks = IPOptCallback(ev_f=EV_F,
+                                  ev_grad_f=EV_GRAD_F,
+                                  ev_g=EV_G,
+                                  ev_jac_g=EV_JAC_G,
+                                  hess_sparsity=sparsity_hess,
+                                  jac_g_sparsity=sparsity_jac_g)
 
+iter_callbacks = IPOptCallback(ev_f=EV_F_ITER,
+                               ev_grad_f=EV_GRAD_F_ITER,
+                               ev_g=EV_G_ITER,
+                               ev_jac_g=EV_JAC_G_ITER,
+                               hess_sparsity=sparsity_hess,
+                               jac_g_sparsity=sparsity_jac_g)

@@ -12,6 +12,7 @@ import gpr.interpolation as interpol  #interface to sparse grid library/terminal
 import gpr.interpolation_iter as interpol_iter  #interface to sparse grid library/iteration
 import gpr.postprocessing as post  #computes the L2 and Linfinity error of the model
 
+
 def configure_run(run_config):
     utils.make_directory(run_config['odir'])
 
@@ -36,7 +37,6 @@ def configure_run(run_config):
               '\tModel: %s\r\n' % run_config['model']['name'] + \
               '###################################################'
     logger.info(log_str)
-    #   '\tMax Updates, Save Interval: (%d,%d) \r\n' % (run_config['num_updates'],run_config['save_interval']) + \
 
 
 _ITER_LOG_STR = """
@@ -57,21 +57,21 @@ def fit_model(run_config):
         # terminal value function
         if (i == 1):
             logger.info("Value Function Iteration -- Initial Step")
-            interpol.GPR_init(parameters, i, cp_fstr % i)
+            interpol.GPR_iter(parameters, i, cp_fstr % i)
         else:
             logger.info("Value Function Iteration -- Step %d" % i)
-            interpol_iter.GPR_iter(parameters, i, cp_fstr % (i-1), cp_fstr % i)
+            interpol.GPR_iter(parameters, i, cp_fstr % i, cp_fstr % (i - 1))
 
     logger.info(_ITER_LOG_STR % (parameters.n_agents, parameters.numits))
 
     # compute errors
     avg_err = post.ls_error(parameters.n_agents, parameters.numstart,
                             parameters.numits,
-                            parameters.No_samples_postprocess,
-                            run_config['odir'])
+                            parameters.No_samples_postprocess, cp_fstr,
+                            parameters, '%s/errors.txt' % (run_config['odir']))
 
     end = time.time()
-    logger.info('Time elapsed: %.3f %' (end - start))
+    logger.info('Time elapsed: %.3f' % (end - start))
 
 
 if __name__ == "__main__":

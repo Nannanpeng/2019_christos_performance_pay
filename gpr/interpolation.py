@@ -13,7 +13,8 @@ import numpy as np
 import logging
 import sys
 logger = logging.getLogger(__name__)
-logger.write = lambda msg: logger.info(msg.decode('utf-8')) if msg.strip() != '' else None
+logger.write = lambda msg: logger.info(msg.decode('utf-8')) if msg.strip(
+) != '' else None
 import pickle
 
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -22,8 +23,17 @@ from sklearn.gaussian_process.kernels import RBF, WhiteKernel, Matern
 from . import nonlinear_solver as solver
 from utils import stdout_redirector
 
-def GPR_init(params, iteration, checkpoint_out):
+
+def GPR_iter(params, iteration, checkpoint_out, checkpoint_in=None):
     logger.info("Beginning Step %d" % iteration)
+
+    # Load checkpoint from disk
+    gp_old = None
+    if checkpoint_in is not None:
+        with open(checkpoint_in, 'rb') as fd_old:
+            gp_old = pickle.load(fd_old)
+            logger.info('Data from iteration step %d loaded from disk' %
+                        (iteration - 1))
 
     #fix seed
     np.random.seed(666)
@@ -37,7 +47,7 @@ def GPR_init(params, iteration, checkpoint_out):
     # solve bellman equations at training points
     # with stdout_redirector(logger):
     for iI in range(len(Xtraining)):
-        y[iI] = solver.solve(Xtraining[iI], params.n_agents, params)[0]
+        y[iI] = solver.solve(Xtraining[iI], params.n_agents, params, gp_old)[0]
 
     # Instantiate a Gaussian Process model
     # Fit to data using Maximum Likelihood Estimation of the parameters

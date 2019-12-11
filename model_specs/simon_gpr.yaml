@@ -15,8 +15,6 @@ parameters:
   numits:
     kind: int
     value: 7
-  # filename: "restart/restart_file_step_"
-  # Model params
   beta:
     kind: float
     value: 0.8
