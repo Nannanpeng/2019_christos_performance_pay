@@ -6,14 +6,16 @@
 #
 #=======================================================================
 
+from collections import namedtuple
 from . import model
 import numpy as np
 
 #=======================================================================
 #   Objective Function to start VFI (in our case, the value function)
 
+IPOptCallback = namedtuple('IPOptCallback',['ev_f','ev_grad_f','ev_g','ev_jac_g','hess_sparsity','jac_g_sparsity'])
 
-def EV_F(X, k_init, n_agents, params):
+def EV_F(X, k_init, n_agents, params, *args):
     # Extract Variables
     cons = X[0:n_agents]
     lab = X[n_agents:2 * n_agents]
@@ -40,7 +42,7 @@ def V_INFINITY(k=[], params=None):
 #   Objective Function during VFI (note - we need to interpolate on an "old" GPR)
 
 
-def EV_F_ITER(X, k_init, n_agents, gp_old, params):
+def EV_F_ITER(X, k_init, n_agents, params, gp_old, *args):
 
     # Extract Variables
     cons = X[0:n_agents]
@@ -69,7 +71,7 @@ def EV_F_ITER(X, k_init, n_agents, gp_old, params):
 #   Computation of gradient (first order finite difference) of initial objective function
 
 
-def EV_GRAD_F(X, k_init, n_agents, params):
+def EV_GRAD_F(X, k_init, n_agents, params, *args):
 
     N = len(X)
     GRAD = np.zeros(N, float)  # Initial Gradient of Objective Function
@@ -102,7 +104,7 @@ def EV_GRAD_F(X, k_init, n_agents, params):
 #   Computation of gradient (first order finite difference) of the objective function
 
 
-def EV_GRAD_F_ITER(X, k_init, n_agents, gp_old):
+def EV_GRAD_F_ITER(X, k_init, n_agents, params, gp_old, *args):
 
     N = len(X)
     GRAD = np.zeros(N, float)  # Initial Gradient of Objective Function
@@ -164,7 +166,7 @@ def EV_G(X, k_init, n_agents, params):
 #   Equality constraints during the VFI of the model
 
 
-def EV_G_ITER(X, k_init, n_agents):
+def EV_G_ITER(X, k_init, n_agents, params):
     N = len(X)
     M = 3 * n_agents + 1  # number of constraints
     G = np.empty(M, float)
@@ -181,8 +183,8 @@ def EV_G_ITER(X, k_init, n_agents):
         G[i + 2 * n_agents] = inv[i]
 
     f_prod = output_f(k_init, lab)
-    Gamma_adjust = 0.5 * zeta * k_init * ((inv / k_init - delta)**2.0)
-    sectors_sum = cons + inv - delta * k_init - (f_prod - Gamma_adjust)
+    Gamma_adjust = 0.5 * params.zeta * k_init * ((inv / k_init - params.delta)**2.0)
+    sectors_sum = cons + inv - params.delta * k_init - (f_prod - Gamma_adjust)
     G[3 * n_agents] = np.sum(sectors_sum)
 
     return G
@@ -217,7 +219,7 @@ def EV_JAC_G(X, k_init, n_agents, params):
 #   during iteration
 
 
-def EV_JAC_G_ITER(X, k_init, n_agents):
+def EV_JAC_G_ITER(X, k_init, n_agents, params):
     N = len(X)
     M = 3 * n_agents + 1
     NZ = M * N
@@ -225,7 +227,7 @@ def EV_JAC_G_ITER(X, k_init, n_agents):
 
     # Finite Differences
     h = 1e-4
-    gx1 = EV_G_ITER(X, k_init, n_agents)
+    gx1 = EV_G_ITER(X, k_init, n_agents, params)
 
     for ixM in range(M):
         for ixN in range(N):
@@ -263,3 +265,22 @@ def sparsity_hess(N):
             idx += 1
 
     return (A1, A2)
+
+initial_callbacks = IPOptCallback(
+    ev_f = EV_F,
+    ev_grad_f = EV_GRAD_F,
+    ev_g = EV_G,
+    ev_jac_g = EV_JAC_G,
+    hess_sparsity = sparsity_hess,
+    jac_g_sparsity = sparsity_jac_g
+)
+
+iter_callbacks = IPOptCallback(
+    ev_f = EV_F_ITER,
+    ev_grad_f = EV_GRAD_F_ITER,
+    ev_g = EV_G_ITER,
+    ev_jac_g = EV_JAC_G_ITER,
+    hess_sparsity = sparsity_hess,
+    jac_g_sparsity = sparsity_jac_g
+)
+

@@ -10,9 +10,6 @@
 import numpy as np
 
 #======================================================================
-#utility function u(c,l)
-
-
 def utility(cons=[], lab=[], params=None):
     sum_util = 0.0
     n = len(cons)

@@ -14,7 +14,7 @@
 #======================================================================
 
 import numpy as np
-from . import nonlinear_solver_iterate as solver
+from . import nonlinear_solver as solver
 import pickle
 
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -23,7 +23,7 @@ from sklearn.gaussian_process.kernels import RBF, WhiteKernel, Matern
 #======================================================================
 
 
-def GPR_iter(iteration):
+def GPR_iter(params, iteration, checkpoint_in, checkpoint_out):
 
     # Load the model from the previous iteration step
     restart_data = filename + str(iteration - 1) + ".pcl"
@@ -40,27 +40,16 @@ def GPR_iter(iteration):
 
     # solve bellman equations at training points
     for iI in range(len(Xtraining)):
-        y[iI] = solver.iterate(Xtraining[iI], n_agents, gp_old)[0]
+        y[iI] = solver.solve(Xtraining[iI], n_agents, gp_old)[0]
 
     #print data for debugging purposes
     #for iI in range(len(Xtraining)):
     #print Xtraining[iI], y[iI]
 
     # Instantiate a Gaussian Process model
-    kernel = RBF()
-
-    # Instantiate a Gaussian Process model
-    #kernel = 1.0 * RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
-
-    #kernel = 1.0 * RBF(length_scale=100.0, length_scale_bounds=(1e-1, 2e2)) \
-    #+ WhiteKernel(noise_level=1, noise_level_bounds=(1e-3, 1e+0))
-
-    #kernel = 1.0 * RBF(length_scale=100.0, length_scale_bounds=(1e-1, 2e2))
-    #kernel = 1.0 * Matern(length_scale=1.0, length_scale_bounds=(1e-1, 10.0),nu=1.5)
-
-    gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
-
     # Fit to data using Maximum Likelihood Estimation of the parameters
+    kernel = RBF()
+    gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
     gp.fit(Xtraining, y)
 
     ##save the model to a file

@@ -8,16 +8,9 @@ import yaml
 import random
 
 import utils
-import solver
-import models
-
-import gpr.nonlinear_solver_initial as solver  #solves opt. problems for terminal VF
-import gpr.nonlinear_solver_iterate as solviter  #solves opt. problems during VFI
 import gpr.interpolation as interpol  #interface to sparse grid library/terminal VF
 import gpr.interpolation_iter as interpol_iter  #interface to sparse grid library/iteration
 import gpr.postprocessing as post  #computes the L2 and Linfinity error of the model
-import numpy as np
-
 
 def configure_run(run_config):
     utils.make_directory(run_config['odir'])
@@ -58,18 +51,16 @@ def fit_model(run_config):
     start = time.time()
     parameters = run_config['model']['parameters']
 
-    #======================================================================
     # Start with Value Function Iteration
-
+    cp_fstr = '%s/restart_%%d.pcl' % (run_config['odir'])
     for i in range(parameters.numstart, parameters.numits):
         # terminal value function
         if (i == 1):
-            logger.info("start with Value Function Iteration")
-            interpol.GPR_init(i, parameters, run_config['odir'])
-
+            logger.info("Value Function Iteration -- Initial Step")
+            interpol.GPR_init(parameters, i, cp_fstr % i)
         else:
-            logger.info("Now, we are in Value Function Iteration step %d" % i)
-            interpol_iter.GPR_iter(i, parameters)
+            logger.info("Value Function Iteration -- Step %d" % i)
+            interpol_iter.GPR_iter(parameters, i, cp_fstr % (i-1), cp_fstr % i)
 
     logger.info(_ITER_LOG_STR % (parameters.n_agents, parameters.numits))
 
