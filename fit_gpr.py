@@ -77,6 +77,5 @@ if __name__ == "__main__":
     parser = utils.run.gpr_argparser()
     args = parser.parse_args()
     run_config = utils.run.run_config_from_args(args)
-    print(run_config)
     configure_run(run_config)
     fit_model(run_config)

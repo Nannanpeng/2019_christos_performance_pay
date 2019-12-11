@@ -13,7 +13,7 @@ import ipyopt
 from .ipopt_wrapper import initial_callbacks, iter_callbacks
 
 
-def _init_x(n_agents,params):
+def _init_x(n_agents, params):
     N = 3 * n_agents
     # Vector of variables -> solution of non-linear equation system
     X = np.empty(N)
@@ -46,7 +46,8 @@ def _init_x(n_agents,params):
 
     return X, X_L, X_U
 
-def _init_g(n_agents,params):
+
+def _init_g(n_agents, params):
     M = 3 * n_agents + 1  # number of constraints
 
     # Vector of lower and upper bounds
@@ -76,8 +77,8 @@ def solve(k_init, n_agents, params, gp_old=None):
     # IPOPT PARAMETERS below
     N = 3 * n_agents
     M = 3 * n_agents + 1  # number of constraints
-    X, X_L, X_U = _init_x(n_agents,params)
-    G_L, G_U = _init_g(n_agents,params)
+    X, X_L, X_U = _init_x(n_agents, params)
+    G_L, G_U = _init_g(n_agents, params)
 
     # Create callback functions
     def eval_f(X):
@@ -108,8 +109,8 @@ def solve(k_init, n_agents, params, gp_old=None):
             tol=1e-6,
             acceptable_tol=1e-5,
             derivative_test='first-order',
-            hessian_approximation="limited-memory")
-    # print_level=0)
+            hessian_approximation="limited-memory",
+            print_level=0)
 
     # x: Solution of the primal variables
     # z_l, z_u: Solution of the bound multipliers
