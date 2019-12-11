@@ -8,8 +8,7 @@ import yaml
 import random
 
 import utils
-import gpr.interpolation as interpol  #interface to sparse grid library/terminal VF
-import gpr.postprocessing as post  #computes the L2 and Linfinity error of the model
+import gpr_dp.interpolation as interpol  #interface to sparse grid library/terminal VF
 
 
 def configure_run(run_config):
@@ -64,10 +63,10 @@ def fit_model(run_config):
     logger.info(_ITER_LOG_STR % (parameters.n_agents, parameters.numits))
 
     # compute errors
-    avg_err = post.ls_error(parameters.n_agents, parameters.numstart,
-                            parameters.numits,
-                            parameters.No_samples_postprocess, cp_fstr,
-                            parameters, '%s/errors.txt' % (run_config['odir']))
+    avg_err = utils.metrics.vfi_ls_error(
+        parameters.n_agents, parameters.numstart, parameters.numits,
+        parameters.No_samples_postprocess, cp_fstr, parameters,
+        '%s/errors.txt' % (run_config['odir']))
 
     end = time.time()
     logger.info('Time elapsed: %.3f' % (end - start))

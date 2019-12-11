@@ -130,14 +130,4 @@ def solve(k_init, n_agents, params, gp_old=None):
     l = x[n_agents:2 * n_agents]
     inv = x[2 * n_agents:3 * n_agents]
 
-    to_print = np.hstack((obj, x))
-
-    # == debug ==
-    #f=open("results.txt", 'a')
-    #np.savetxt(f, np.transpose(to_print) #, fmt=len(x)*'%10.10f ')
-    #for num in to_print:
-    #    f.write(str(num)+"\t")
-    #f.write("\n")
-    #f.close()
-
     return obj, c, l, inv

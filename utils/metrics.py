@@ -10,15 +10,11 @@ import numpy as np
 import pickle
 import logging
 logger = logging.getLogger(__name__)
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import (RBF, Matern, RationalQuadratic,
-                                              ExpSineSquared, DotProduct,
-                                              ConstantKernel)
 
 
 #======================================================================
 # Routine compute the errors
-def ls_error(n_agents, t1, t2, num_points, restart_fstr, params, output_path):
+def vfi_ls_error(n_agents, t1, t2, num_points, restart_fstr, params, output_path):
     with open(output_path, 'w') as file:
         # np.random.seed(0)
         unif = np.random.rand(num_points, n_agents)
