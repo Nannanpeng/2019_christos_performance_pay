@@ -9,7 +9,6 @@ import random
 
 import utils
 import gpr.interpolation as interpol  #interface to sparse grid library/terminal VF
-import gpr.interpolation_iter as interpol_iter  #interface to sparse grid library/iteration
 import gpr.postprocessing as post  #computes the L2 and Linfinity error of the model
 
 
