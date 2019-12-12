@@ -2,6 +2,7 @@ from collections import namedtuple
 import numpy as np
 
 from . import dynamics
+from . import utils
 
 
 #=======================================================================
@@ -44,7 +45,7 @@ def EV_F_ITER(X_t, U, params, gp_old, *args):
     X_tp1 = (1 - params.delta) * X_t + inv
 
     #transform to comp. domain of the model
-    X_tp1_cube = dynamics.box_to_cube(X_tp1, params)
+    X_tp1_cube = utils.box_to_cube(X_tp1, params)
 
     # initialize correct data format for training point
     s = (1, params.n_agents)

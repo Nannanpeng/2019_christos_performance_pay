@@ -1,16 +1,9 @@
 import numpy as np
 
-#======================================================================
-# output_f
-
 
 def output_f(kap=[], lab=[], params=None):
     fun_val = params.big_A * (kap**params.psi) * (lab**(1.0 - params.psi))
     return fun_val
-
-
-#======================================================================
-#   Equality constraints for the first time step of the model
 
 
 def EV_G(X_t, U, params):
@@ -37,48 +30,7 @@ def EV_G(X_t, U, params):
     return G
 
 
-#======================================================================
-#   Equality constraints during the VFI of the model
-
-
-def EV_G_ITER(X_t, U, params):
-    N = len(U)
-    M = 3 * params.n_agents + 1  # number of constraints
-    G = np.empty(M, float)
-
-    # Extract Variables
-    cons = U[:params.n_agents]
-    lab = U[params.n_agents:2 * params.n_agents]
-    inv = U[2 * params.n_agents:3 * params.n_agents]
-
-    # first params.n_agents equality constraints
-    for i in range(params.n_agents):
-        G[i] = cons[i]
-        G[i + params.n_agents] = lab[i]
-        G[i + 2 * params.n_agents] = inv[i]
-
-    f_prod = output_f(X_t, lab, params)
-    Gamma_adjust = 0.5 * params.zeta * X_t * ((inv / X_t - params.delta)**2.0)
-    sectors_sum = cons + inv - params.delta * X_t - (f_prod - Gamma_adjust)
-    G[3 * params.n_agents] = np.sum(sectors_sum)
-
-    return G
-
-
-#======================================================================
-#   Computation (finite difference) of Jacobian of equality constraints
-#   for first time step
-
-
 def EV_JAC_G(X_t, U, params):
-    return _EV_JAC_G_IMPL(X_t, U, params, EV_G)
-
-
-def EV_JAC_G_ITER(X_t, U, params):
-    return _EV_JAC_G_IMPL(X_t, U, params, EV_G_ITER)
-
-
-def _EV_JAC_G_IMPL(X_t, U, params, _EV_G):
     N = len(U)
     M = 3 * params.n_agents + 1
     NZ = M * N
@@ -86,42 +38,15 @@ def _EV_JAC_G_IMPL(X_t, U, params, _EV_G):
 
     # Finite Differences
     h = 1e-4
-    gu1 = _EV_G(X_t, U, params)
+    gu1 = EV_G(X_t, U, params)
 
     for iuM in range(M):
         for iuN in range(N):
             uAdj = np.copy(U)
             uAdj[iuN] = uAdj[iuN] + h
-            gu2 = _EV_G( X_t, uAdj, params)
+            gu2 = EV_G(X_t, uAdj, params)
             A[iuN + iuM * N] = (gu2[iuM] - gu1[iuM]) / h
     return A
-
-
-#======================================================================
-#   Computation (finite difference) of Jacobian of equality constraints
-#   during iteration
-
-
-# def EV_JAC_G_ITER(X_t, U, params):
-#     N = len(U)
-#     M = 3 * params.n_agents + 1
-#     NZ = M * N
-#     A = np.empty(NZ, float)
-
-#     # Finite Differences
-#     h = 1e-4
-#     gu1 = EV_G_ITER(U, X_t, params)
-
-#     for iuM in range(M):
-#         for iuN in range(N):
-#             uAdj = np.copy(U)
-#             uAdj[iuN] = uAdj[iuN] + h
-#             gu2 = EV_G_ITER(uAdj, X_t, params)
-#             A[iuN + iuM * N] = (gu2[iuM] - gu1[iuM]) / h
-#     return A
-
-
-#======================================================================
 
 
 def sparsity_jac_g(N, M):
@@ -136,7 +61,6 @@ def sparsity_jac_g(N, M):
     return (ACON, AVAR)
 
 
-#======================================================================
 def utility(cons=[], lab=[], params=None):
     sum_util = 0.0
     n = len(cons)
@@ -152,36 +76,6 @@ def utility(cons=[], lab=[], params=None):
     util = sum_util
 
     return util
-
-
-#======================================================================
-
-
-# transformation to comp domain -- range of [k_bar, k_up]
-def box_to_cube(knext=[], params=None):
-    n = len(knext)
-    knext_box = knext[0:n]
-    knext_dummy = knext[0:n]
-
-    scaling_dept = (params.range_cube / (params.k_up - params.k_bar)
-                    )  #scaling for kap
-
-    #transformation onto cube [0,1]^d
-    for i in range(n):
-        #prevent values outside the box
-        if knext[i] > params.k_up:
-            knext_dummy[i] = params.k_up
-        elif knext[i] < params.k_bar:
-            knext_dummy[i] = params.k_bar
-        else:
-            knext_dummy[i] = knext[i]
-        #transformation to sparse grid domain
-        knext_box[i] = (knext_dummy[i] - params.k_bar) * scaling_dept
-
-    return knext_box
-
-
-#======================================================================
 
 
 def control_bounds(params):
