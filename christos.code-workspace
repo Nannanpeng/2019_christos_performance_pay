@@ -51,7 +51,8 @@
             "**/tmp/**": true,
             "**/bazel-*/**": true,
             "**/.git/objects/**": true,
-            "**/.git/subtree-cache/**": true
+            "**/.git/subtree-cache/**": true,
+            "**/global_solution_yale19/**": true,
         }
 	}
 }

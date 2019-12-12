@@ -24,7 +24,7 @@ from . import nonlinear_solver as solver
 from utils import stdout_redirector
 
 
-def GPR_iter(params, iteration, checkpoint_out, checkpoint_in=None):
+def GPR_iter(model, iteration, checkpoint_out, checkpoint_in=None):
     logger.info("Beginning Step %d" % iteration)
 
     # Load checkpoint from disk
@@ -39,15 +39,15 @@ def GPR_iter(params, iteration, checkpoint_out, checkpoint_in=None):
     np.random.seed(666)
 
     #generate sample aPoints
-    dim = params.n_agents
-    Xtraining = np.random.uniform(params.k_bar, params.k_up,
-                                  (params.No_samples, dim))
-    y = np.zeros(params.No_samples, float)  # training targets
+    dim = model.params.n_agents
+    Xtraining = np.random.uniform(model.params.k_bar, model.params.k_up,
+                                  (model.params.No_samples, dim))
+    y = np.zeros(model.params.No_samples, float)  # training targets
 
     # solve bellman equations at training points
     # with stdout_redirector(logger):
     for iI in range(len(Xtraining)):
-        y[iI] = solver.solve(Xtraining[iI], params.n_agents, params, gp_old)[0]
+        y[iI] = solver.solve(model, Xtraining[iI], gp_old)[0]
 
     # Instantiate a Gaussian Process model
     # Fit to data using Maximum Likelihood Estimation of the parameters

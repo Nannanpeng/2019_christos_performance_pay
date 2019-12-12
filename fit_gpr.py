@@ -8,8 +8,8 @@ import yaml
 import random
 
 import utils
-import gpr_dp.interpolation as interpol  #interface to sparse grid library/terminal VF
-
+from solver.gpr_continuous import GPR_iter 
+from models.simon_growth import SimonGrowthModel
 
 def configure_run(run_config):
     utils.make_directory(run_config['odir'])
@@ -48,6 +48,7 @@ finished after %d steps
 def fit_model(run_config):
     start = time.time()
     parameters = run_config['model']['parameters']
+    model = SimonGrowthModel(parameters)
 
     # Start with Value Function Iteration
     cp_fstr = '%s/restart_%%d.pcl' % (run_config['odir'])
@@ -55,10 +56,10 @@ def fit_model(run_config):
         # terminal value function
         if (i == 1):
             logger.info("Value Function Iteration -- Initial Step")
-            interpol.GPR_iter(parameters, i, cp_fstr % i)
+            GPR_iter(model, i, cp_fstr % i)
         else:
             logger.info("Value Function Iteration -- Step %d" % i)
-            interpol.GPR_iter(parameters, i, cp_fstr % i, cp_fstr % (i - 1))
+            GPR_iter(model, i, cp_fstr % i, cp_fstr % (i - 1))
 
     logger.info(_ITER_LOG_STR % (parameters.n_agents, parameters.numits))
 
