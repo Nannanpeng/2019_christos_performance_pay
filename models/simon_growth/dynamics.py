@@ -1,11 +1,19 @@
 import numpy as np
 
+#======================================================================
+# output_f
+
+
+def output_f(kap=[], lab=[], params=None):
+    fun_val = params.big_A * (kap**params.psi) * (lab**(1.0 - params.psi))
+    return fun_val
+
 
 #======================================================================
 #   Equality constraints for the first time step of the model
 
 
-def EV_G(U, X_t, params):
+def EV_G(X_t, U, params):
     N = len(U)
     M = 3 * params.n_agents + 1  # number of constraints
     G = np.empty(M, float)
@@ -21,9 +29,8 @@ def EV_G(U, X_t, params):
         G[i + params.n_agents] = lab[i]
         G[i + 2 * params.n_agents] = inv[i]
 
-    f_prod = model.output_f(X_t, lab, params)
-    Gamma_adjust = 0.5 * params.zeta * X_t * (
-        (inv / X_t - params.delta)**2.0)
+    f_prod = output_f(X_t, lab, params)
+    Gamma_adjust = 0.5 * params.zeta * X_t * ((inv / X_t - params.delta)**2.0)
     sectors_sum = cons + inv - params.delta * X_t - (f_prod - Gamma_adjust)
     G[3 * params.n_agents] = np.sum(sectors_sum)
 
@@ -34,7 +41,7 @@ def EV_G(U, X_t, params):
 #   Equality constraints during the VFI of the model
 
 
-def EV_G_ITER(U, X_t, params):
+def EV_G_ITER(X_t, U, params):
     N = len(U)
     M = 3 * params.n_agents + 1  # number of constraints
     G = np.empty(M, float)
@@ -50,9 +57,8 @@ def EV_G_ITER(U, X_t, params):
         G[i + params.n_agents] = lab[i]
         G[i + 2 * params.n_agents] = inv[i]
 
-    f_prod = model.output_f(X_t, lab, params)
-    Gamma_adjust = 0.5 * params.zeta * X_t * (
-        (inv / X_t - params.delta)**2.0)
+    f_prod = output_f(X_t, lab, params)
+    Gamma_adjust = 0.5 * params.zeta * X_t * ((inv / X_t - params.delta)**2.0)
     sectors_sum = cons + inv - params.delta * X_t - (f_prod - Gamma_adjust)
     G[3 * params.n_agents] = np.sum(sectors_sum)
 
@@ -64,13 +70,15 @@ def EV_G_ITER(U, X_t, params):
 #   for first time step
 
 
-def EV_JAC_G(U,X_t,params):
-    return _EV_JAC_G_IMPL(U,X_t,params,EV_G)
+def EV_JAC_G(X_t, U, params):
+    return _EV_JAC_G_IMPL(X_t, U, params, EV_G)
 
-def EV_JAC_G_ITER(U,X_t,params):
-    return _EV_JAC_G_IMPL(U,X_t,params,EV_G_ITER)
 
-def _EV_JAC_G_IMPL(U, X_t,params, _EV_G):
+def EV_JAC_G_ITER(X_t, U, params):
+    return _EV_JAC_G_IMPL(X_t, U, params, EV_G_ITER)
+
+
+def _EV_JAC_G_IMPL(X_t, U, params, _EV_G):
     N = len(U)
     M = 3 * params.n_agents + 1
     NZ = M * N
@@ -78,13 +86,13 @@ def _EV_JAC_G_IMPL(U, X_t,params, _EV_G):
 
     # Finite Differences
     h = 1e-4
-    gu1 = _EV_G(U, X_t, params)
+    gu1 = _EV_G(X_t, U, params)
 
     for iuM in range(M):
         for iuN in range(N):
             uAdj = np.copy(U)
             uAdj[iuN] = uAdj[iuN] + h
-            gu2 = _EV_G(uAdj, X_t,params)
+            gu2 = _EV_G( X_t, uAdj, params)
             A[iuN + iuM * N] = (gu2[iuM] - gu1[iuM]) / h
     return A
 
@@ -94,23 +102,23 @@ def _EV_JAC_G_IMPL(U, X_t,params, _EV_G):
 #   during iteration
 
 
-def EV_JAC_G_ITER(U, X_t, params):
-    N = len(U)
-    M = 3 * params.n_agents + 1
-    NZ = M * N
-    A = np.empty(NZ, float)
+# def EV_JAC_G_ITER(X_t, U, params):
+#     N = len(U)
+#     M = 3 * params.n_agents + 1
+#     NZ = M * N
+#     A = np.empty(NZ, float)
 
-    # Finite Differences
-    h = 1e-4
-    gu1 = EV_G_ITER(U, X_t, params)
+#     # Finite Differences
+#     h = 1e-4
+#     gu1 = EV_G_ITER(U, X_t, params)
 
-    for iuM in range(M):
-        for iuN in range(N):
-            uAdj = np.copy(U)
-            uAdj[iuN] = uAdj[iuN] + h
-            gu2 = EV_G_ITER(uAdj, X_t, params)
-            A[iuN + iuM * N] = (gu2[iuM] - gu1[iuM]) / h
-    return A
+#     for iuM in range(M):
+#         for iuN in range(N):
+#             uAdj = np.copy(U)
+#             uAdj[iuN] = uAdj[iuN] + h
+#             gu2 = EV_G_ITER(uAdj, X_t, params)
+#             A[iuN + iuM * N] = (gu2[iuM] - gu1[iuM]) / h
+#     return A
 
 
 #======================================================================
@@ -147,23 +155,16 @@ def utility(cons=[], lab=[], params=None):
 
 
 #======================================================================
-# output_f
 
-
-def output_f(kap=[], lab=[], params=None):
-    fun_val = params.big_A * (kap**params.psi) * (lab**(1.0 - params.psi))
-    return fun_val
-
-
-#======================================================================
 
 # transformation to comp domain -- range of [k_bar, k_up]
-def box_to_cube(knext=[],params=None):
+def box_to_cube(knext=[], params=None):
     n = len(knext)
     knext_box = knext[0:n]
     knext_dummy = knext[0:n]
 
-    scaling_dept = (params.range_cube / (params.k_up - params.k_bar))  #scaling for kap
+    scaling_dept = (params.range_cube / (params.k_up - params.k_bar)
+                    )  #scaling for kap
 
     #transformation onto cube [0,1]^d
     for i in range(n):
@@ -175,7 +176,7 @@ def box_to_cube(knext=[],params=None):
         else:
             knext_dummy[i] = knext[i]
         #transformation to sparse grid domain
-        knext_box[i] = (knext_dummy[i] -params.k_bar) * scaling_dept
+        knext_box[i] = (knext_dummy[i] - params.k_bar) * scaling_dept
 
     return knext_box
 
@@ -239,5 +240,3 @@ def constraint_bounds(params):
     G_U[3 * n_agents] = 0.0
 
     return G_L, G_U
-
-

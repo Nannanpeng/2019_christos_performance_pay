@@ -43,8 +43,8 @@ def solve(model, X, V_tp1=None):
             tol=1e-6,
             acceptable_tol=1e-5,
             derivative_test='first-order',
-            hessian_approximation="limited-memory",
-            print_level=0)
+            hessian_approximation="limited-memory")
+            # print_level=0)
 
     # u: Solution of the primal variables
     # z_l, z_u: Solution of the bound multipliers

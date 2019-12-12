@@ -12,13 +12,13 @@ class SimonGrowthModel:
 
     # state-action value function
     def value(self, X, U, V_tp1=None):
-        if V_tp1 is not None:
+        if V_tp1 is None:
             return bellman.EV_F(X, U, self.params)
         return bellman.EV_F_ITER(X, U, self.params, V_tp1)
 
     # returns gradient of val function (ie deriv transpose)
     def value_deriv(self, X, U, V_tp1=None):
-        if V_tp1 is not None:
+        if V_tp1 is None:
             return bellman.EV_GRAD_F(X, U, self.params)
         return bellman.EV_GRAD_F_ITER(X, U, self.params, V_tp1)
 

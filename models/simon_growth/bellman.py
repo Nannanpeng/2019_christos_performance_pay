@@ -3,9 +3,10 @@ import numpy as np
 
 from . import dynamics
 
+
 #=======================================================================
 #   Objective Function to start VFI (in our case, the value function)
-def EV_F(U, X_t, params, *args):
+def EV_F(X_t, U, params, *args):
     # Extract Variables
     cons = U[0:params.n_agents]
     lab = U[params.n_agents:2 * params.n_agents]
@@ -14,16 +15,16 @@ def EV_F(U, X_t, params, *args):
     X_tp1 = (1 - params.delta) * X_t + inv
 
     # Compute Value Function
-    VT_sum = dynamics.utility(cons, lab,
-                           params) + params.beta * V_INFINITY(X_tp1, params)
+    VT_sum = dynamics.utility(
+        cons, lab, params) + params.beta * V_INFINITY(X_tp1, params)
 
     return VT_sum
 
 
 # V infinity
-def V_INFINITY(k=[], params=None):
-    e = np.ones(len(k))
-    c = dynamics.output_f(k, e, params)
+def V_INFINITY(X=[], params=None):
+    e = np.ones(len(X))
+    c = dynamics.output_f(X, e, params)
     v_infinity = dynamics.utility(c, e, params) / (1 - params.beta)
     return v_infinity
 
@@ -32,7 +33,9 @@ def V_INFINITY(k=[], params=None):
 #   Objective Function during VFI (note - we need to interpolate on an "old" GPR)
 
 
-def EV_F_ITER(U, X_t, params, gp_old, *args):
+def EV_F_ITER(X_t, U, params, gp_old, *args):
+    # import pdb
+    # pdb.set_trace()
     # Extract Variables
     cons = U[0:params.n_agents]
     lab = U[params.n_agents:2 * params.n_agents]
@@ -60,8 +63,9 @@ def EV_F_ITER(U, X_t, params, gp_old, *args):
 #   Computation of gradient (first order finite difference) of initial objective function
 
 
-def EV_GRAD_F(U, X_t, params, *args):
-
+def EV_GRAD_F(X_t, U, params, *args):
+    # import pdb
+    # pdb.set_trace()
     N = len(U)
     GRAD = np.zeros(N, float)  # Initial Gradient of Objective Function
     h = 1e-4
@@ -71,19 +75,19 @@ def EV_GRAD_F(U, X_t, params, *args):
 
         if (uAdj[iuN] - h >= 0):
             uAdj[iuN] = U[iuN] + h
-            fu2 = EV_F(uAdj, X_t, params)
+            fu2 = EV_F(X_t, uAdj, params)
 
             uAdj[iuN] = U[iuN] - h
-            fu1 = EV_F(uAdj, X_t, params)
+            fu1 = EV_F(X_t, uAdj, params)
 
             GRAD[iuN] = (fu2 - fu1) / (2.0 * h)
 
         else:
             uAdj[iuN] = U[iuN] + h
-            fu2 = EV_F(uAdj, X_t, params)
+            fu2 = EV_F(X_t, uAdj, params)
 
             uAdj[iuN] = U[iuN]
-            fu1 = EV_F(uAdj, X_t,params)
+            fu1 = EV_F(X_t, uAdj, params)
             GRAD[iuN] = (fu2 - fu1) / h
 
     return GRAD
@@ -93,8 +97,9 @@ def EV_GRAD_F(U, X_t, params, *args):
 #   Computation of gradient (first order finite difference) of the objective function
 
 
-def EV_GRAD_F_ITER(U, X_t,  params, gp_old, *args):
-
+def EV_GRAD_F_ITER(X_t, U, params, gp_old, *args):
+    # import pdb
+    # pdb.set_trace()
     N = len(U)
     GRAD = np.zeros(N, float)  # Initial Gradient of Objective Function
     h = 1e-4
@@ -104,19 +109,19 @@ def EV_GRAD_F_ITER(U, X_t,  params, gp_old, *args):
 
         if (uAdj[iuN] - h >= 0):
             uAdj[iuN] = U[iuN] + h
-            fu2 = EV_F_ITER(uAdj, X_t, params, gp_old)
+            fu2 = EV_F_ITER(X_t, uAdj, params, gp_old)
 
             uAdj[iuN] = U[iuN] - h
-            fu1 = EV_F_ITER(uAdj, X_t, params, gp_old)
+            fu1 = EV_F_ITER(X_t, uAdj, params, gp_old)
 
             GRAD[iuN] = (fu2 - fu1) / (2.0 * h)
 
         else:
             uAdj[iuN] = U[iuN] + h
-            fu2 = EV_F_ITER(uAdj, X_t,  params, gp_old)
+            fu2 = EV_F_ITER(X_t, uAdj, params, gp_old)
 
             uAdj[iuN] = U[iuN]
-            fu1 = EV_F_ITER(uAdj, X_t, params, gp_old)
+            fu1 = EV_F_ITER(X_t, uAdj, params, gp_old)
             GRAD[iuN] = (fu2 - fu1) / h
 
     return GRAD
