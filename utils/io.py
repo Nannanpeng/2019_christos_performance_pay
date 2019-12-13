@@ -68,7 +68,7 @@ def yaml_to_model(model_dict):
         parameters = struct_factory('%s_params' % name, parameters)
     return {
         'constants': constants,
-        'name': model_dict['name'],
+        'name': name,
         'parameters': parameters,
         'dynamics':
         model_dict['dynamics'] if 'dynamics' in model_dict else None
