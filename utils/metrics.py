@@ -21,7 +21,7 @@ def vfi_ls_error(n_agents, t1, t2, num_points, restart_fstr, params, output_path
         k_sample = params.k_bar + (unif) * (params.k_up - params.k_bar)
         to_print = np.empty((1, 3))
 
-        for i in range(t1, t2):
+        for i in range(t1, t2-1):
             sum_diffs = 0
             diff = 0
 

@@ -64,7 +64,7 @@ def gpr_argparser():
     parser.add_argument("-s",
                         '--spec',
                         type=str,
-                        default="./model_specs/simon_gpr.yaml",
+                        default="./specs/simon_gpr.yaml",
                         help="What model / spec to load")
     parser.add_argument("-t",
                         "--terminal",
