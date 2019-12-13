@@ -2,13 +2,19 @@ import numpy as np
 import pandas as pd
 import yaml
 from contextlib import contextmanager
+import logging
+logger = logging.getLogger(__name__)
 import ctypes
 import io
 import os, sys
 import tempfile
+import pickle
 from collections import namedtuple
 
-__all__ = ['struct_factory', 'yaml_to_model', 'load_yaml', 'stdout_redirector']
+__all__ = [
+    'struct_factory', 'yaml_to_model', 'load_yaml', 'stdout_redirector',
+    'save_checkpoint', 'load_checkpoint'
+]
 
 
 def struct_factory(name, dictionary):
@@ -16,6 +22,22 @@ def struct_factory(name, dictionary):
 
 
 # model = namedtuple('ModelSpec',['constants','parameters','dynamics'])
+
+
+def load_checkpoint(path):
+    logger.info('Input file: %s' % path)
+    V = None
+    with open(path, 'rb') as fd_old:
+        V = pickle.load(fd_old)
+        logger.info("Saved checkpoint at path %s loaded from disk" % path)
+    return V
+
+
+def save_checkpoint(V, path):
+    logger.info('Output file: %s' % path)
+    with open(path, 'wb') as fd:
+        pickle.dump(V, fd, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("Saved checkpoint written to disk at path: %s" % path)
 
 
 def _load_value(kind, val):
@@ -43,12 +65,13 @@ def yaml_to_model(model_dict):
             k: _load_value(v['kind'], v['value'])
             for (k, v) in model_dict['parameters'].items()
         }
-        parameters = struct_factory('%s_params' % name,parameters)
+        parameters = struct_factory('%s_params' % name, parameters)
     return {
         'constants': constants,
         'name': model_dict['name'],
         'parameters': parameters,
-        'dynamics': model_dict['dynamics'] if 'dynamics' in model_dict else None
+        'dynamics':
+        model_dict['dynamics'] if 'dynamics' in model_dict else None
     }
 
 
@@ -62,6 +85,7 @@ def load_yaml(file_path):
 
 libc = ctypes.CDLL(None)
 c_stdout = ctypes.c_void_p.in_dll(libc, 'stdout')
+
 
 # Source: https://eli.thegreenplace.net/2015/redirecting-all-kinds-of-stdout-in-python/
 @contextmanager

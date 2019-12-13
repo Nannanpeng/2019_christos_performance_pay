@@ -24,16 +24,8 @@ from . import nonlinear_solver as solver
 from utils import stdout_redirector
 
 
-def GPR_iter(model, iteration, checkpoint_out, checkpoint_in=None):
+def GPR_iter(model, iteration, V_tp1=None):
     logger.info("Beginning Step %d" % iteration)
-
-    # Load checkpoint from disk
-    gp_old = None
-    if checkpoint_in is not None:
-        with open(checkpoint_in, 'rb') as fd_old:
-            gp_old = pickle.load(fd_old)
-            logger.info('Data from iteration step %d loaded from disk' %
-                        (iteration - 1))
 
     #fix seed
     np.random.seed(666)
@@ -47,16 +39,14 @@ def GPR_iter(model, iteration, checkpoint_out, checkpoint_in=None):
     # solve bellman equations at training points
     # with stdout_redirector(logger):
     for iI in range(len(Xtraining)):
-        y[iI] = solver.solve(model, Xtraining[iI], gp_old)[0]
+        y[iI] = solver.solve(model, Xtraining[iI], V_tp1)[0]
 
     # Instantiate a Gaussian Process model
     # Fit to data using Maximum Likelihood Estimation of the parameters
     kernel = RBF()
-    gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=9)
-    gp.fit(Xtraining, y)
+    V_t = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=9)
+    V_t.fit(Xtraining, y)
 
-    #save the model to a file
-    logger.info('Output file: %s' % checkpoint_out)
-    with open(checkpoint_out, 'wb') as fd:
-        pickle.dump(gp, fd, protocol=pickle.HIGHEST_PROTOCOL)
-        logger.info("Step %d data  written to disk" % iteration)
+    logger.info("Finished Step %d" % iteration)
+
+    return V_t

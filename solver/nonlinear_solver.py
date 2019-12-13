@@ -1,3 +1,7 @@
+# Nonlinear Solver:
+#   Uses nonlinear optimization library to optimize the
+#   RHS of the Bellman equation
+
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -46,11 +50,6 @@ def solve(model, X, V_tp1=None):
             hessian_approximation="limited-memory")
             # print_level=0)
 
-    # u: Solution of the primal variables
-    # z_l, z_u: Solution of the bound multipliers
-    # constraint_multipliers: Solution of the constraint multipliers
-    # obj: Objective value
-    # status: Exit Status
     z_l = np.zeros(N)
     z_u = np.zeros(N)
     constraint_multipliers = np.zeros(M)
