@@ -6,15 +6,6 @@ parameters:
   n_agents:
     kind: int 
     value: 2
-  No_samples:
-    kind: int
-    value: 20
-  numstart:
-    kind: int
-    value: 1
-  numits:
-    kind: int
-    value: 7
   beta:
     kind: float
     value: 0.8
@@ -66,6 +57,15 @@ parameters:
   inv_up: 
     kind: float
     value: 10.0
+
+# Run Configuration
+algorithmConfig:
   No_samples_postprocess:
     value: 20
     kind: int
+  No_samples:
+    kind: int
+    value: 20
+  max_updates:
+    kind: int
+    value: 7

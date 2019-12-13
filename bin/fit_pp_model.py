@@ -21,7 +21,7 @@ def configure_run(run_config):
         yaml.dump(run_config, fp, default_flow_style=False)
 
     log_level = logging.DEBUG if run_config['debug'] else logging.INFO
-    if not run_config['console']:
+    if not run_config['terminal']:
         logging.basicConfig(filename=os.path.join(run_config['odir'],'log_run_%d.log' % run_config['run']),
                 level=log_level,
                 format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',)

@@ -12,16 +12,17 @@ import pickle
 from collections import namedtuple
 
 __all__ = [
-    'struct_factory', 'yaml_to_model', 'load_yaml', 'stdout_redirector',
-    'save_checkpoint', 'load_checkpoint'
+    'struct_factory', 'yaml_to_spec', 'load_yaml', 'stdout_redirector',
+    'save_checkpoint', 'load_checkpoint', 'ModelSpec'
 ]
+
+ModelSpec = namedtuple('ModelSpec',
+                       ['constants', 'parameters', 'dynamics', 'name'])
+RunSpec = namedtuple('RunSpec', ['model', 'algorithm_config'])
 
 
 def struct_factory(name, dictionary):
     return namedtuple(name, dictionary.keys())(**dictionary)
-
-
-# model = namedtuple('ModelSpec',['constants','parameters','dynamics'])
 
 
 def load_checkpoint(path):
@@ -41,6 +42,8 @@ def save_checkpoint(V, path):
 
 
 def _load_value(kind, val):
+    if kind == 'str':
+        return str(val)
     if kind == 'float':
         return float(val)
     if kind == 'int':
@@ -51,28 +54,30 @@ def _load_value(kind, val):
         return pd.read_csv(val)
 
 
-def yaml_to_model(model_dict):
-    constants, parameters = None, None
-    name = model_dict['name']
-    if 'constants' in model_dict:
-        constants = {
-            k: _load_value(v['kind'], v['value'])
-            for (k, v) in model_dict['constants'].items()
-        }
-        constants = struct_factory('%s_constants' % name, constants)
-    if 'parameters' in model_dict:
-        parameters = {
-            k: _load_value(v['kind'], v['value'])
-            for (k, v) in model_dict['parameters'].items()
-        }
-        parameters = struct_factory('%s_params' % name, parameters)
-    return {
-        'constants': constants,
-        'name': name,
-        'parameters': parameters,
-        'dynamics':
-        model_dict['dynamics'] if 'dynamics' in model_dict else None
+def _process_entry(entry, entry_name, model_name):
+    entry_val = {
+        k: _load_value(v['kind'], v['value'])
+        for (k, v) in entry.items()
     }
+    return struct_factory('%s_%s' % (model_name, entry_name), entry_val)
+
+
+def yaml_to_spec(model_dict):
+    name = model_dict['name']
+
+    constants = _process_entry(model_dict['constants'], 'constants',
+                               name) if 'constants' in model_dict else None
+    parameters = _process_entry(model_dict['parameters'], 'parameters',
+                                name) if 'parameters' in model_dict else None
+    algorithm = _process_entry(
+        model_dict['algorithmConfig'], 'algorithmConfig',
+        name) if 'algorithmConfig' in model_dict else None
+    dynamics = model_dict['dynamics'] if 'dynamics' in model_dict else None
+    return RunSpec(model=ModelSpec(constants=constants,
+                                   parameters=parameters,
+                                   dynamics=dynamics,
+                                   name=name),
+                   algorithm_config=algorithm)
 
 
 def load_yaml(file_path):

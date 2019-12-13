@@ -24,7 +24,7 @@ from . import nonlinear_solver as solver
 from utils import stdout_redirector
 
 
-def GPR_iter(model, iteration, V_tp1=None):
+def GPR_iter(model, iteration, V_tp1=None, num_samples = 20):
     logger.info("Beginning Step %d" % iteration)
 
     #fix seed
@@ -33,8 +33,8 @@ def GPR_iter(model, iteration, V_tp1=None):
     #generate sample aPoints
     dim = model.params.n_agents
     Xtraining = np.random.uniform(model.params.k_bar, model.params.k_up,
-                                  (model.params.No_samples, dim))
-    y = np.zeros(model.params.No_samples, float)  # training targets
+                                  (num_samples, dim))
+    y = np.zeros(num_samples, float)  # training targets
 
     # solve bellman equations at training points
     # with stdout_redirector(logger):
