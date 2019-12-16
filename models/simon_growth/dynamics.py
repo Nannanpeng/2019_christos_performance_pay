@@ -97,19 +97,7 @@ def control_bounds(params):
     U_L[2 * n_agents:3 * n_agents] = params.inv_bar
     U_U[2 * n_agents:3 * n_agents] = params.inv_up
 
-    # initial guesses for first iteration
-    cons_init = 0.5 * (U_U[:n_agents] - U_L[:n_agents]) + U_L[:n_agents]
-    lab_init = 0.5 * (U_U[n_agents:2 * n_agents] -
-                      U_L[n_agents:2 * n_agents]) + U_L[n_agents:2 * n_agents]
-    inv_init = 0.5 * (U_U[2 * n_agents:3 * n_agents] -
-                      U_L[2 * n_agents:3 * n_agents]) + U_L[2 * n_agents:3 *
-                                                            n_agents]
-
-    U[:n_agents] = cons_init
-    U[n_agents:2 * n_agents] = lab_init
-    U[2 * n_agents:3 * n_agents] = inv_init
-
-    return U, U_L, U_U
+    return U_L, U_U
 
 
 def constraint_bounds(params):

@@ -15,7 +15,8 @@ def solve(model, X, V_tp1=None):
     N = model.N
     M = model.M
 
-    U, U_L, U_U = model.bounds_control
+    U_L, U_U = model.bounds_control
+    U = 0.5*(U_U - U_L) + U_L
     G_L, G_U = model.bounds_constraint
 
     # Create callback functions
