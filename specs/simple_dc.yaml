@@ -18,10 +18,13 @@ parameters:
     value: 0.01
   c_up: 
     kind: float
-    value: 1e10
+    value: 500
   T:
     kind: int
     value: 20
+  wage:
+    kind: float
+    value: 50
 
 
 # Run Configuration

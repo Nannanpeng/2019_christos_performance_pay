@@ -12,12 +12,12 @@ class DCSimple:
         self.num_choices = 2
 
     # state-action value function
-    def value(self, X, U, U_k = None, V_tp1=None):
+    def value(self, X, U, U_k = None, V_tp1=None, **kwargs):
         assert U_k is not None, "Must specify discrete action"
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
         return bellman.state_action_value(X, U, U_k, self.params, V_tp1)
 
-    def value_deriv(self, X, U, U_k = None, V_tp1=None):
+    def value_deriv(self, X, U, U_k = None, V_tp1=None, **kwargs):
         assert U_k is not None, "Must specify discrete action"
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
         F = lambda U: bellman.state_action_value(X, U, U_k, self.params, V_tp1)
@@ -27,11 +27,11 @@ class DCSimple:
     def value_hess_sparsity(self):
         return mu.dense_hessian(self.dim.control)
 
-    def constraints(self, X, U):
+    def constraints(self, X, U, **kwargs):
         return dynamics.EV_G(X, U, self.params)
 
     # returns derivative (jacobian) of constraint set
-    def constraints_deriv(self, X, U):
+    def constraints_deriv(self, X, U, **kwargs):
         F = lambda U: dynamics.EV_G(X,U,self.params)
         return mu.jacobian_fd(F, U, self.dim.control,self.dim.constraints)
 

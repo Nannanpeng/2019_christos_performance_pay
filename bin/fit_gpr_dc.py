@@ -81,7 +81,5 @@ if __name__ == "__main__":
     parser = utils.run.gpr_argparser(default_spec='./specs/simple_dc.yaml')
     args = parser.parse_args()
     run_config = utils.run.run_config_from_args(args)
-    print(run_config)
-    quit()
     configure_run(run_config)
     fit_model(run_config)
