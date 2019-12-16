@@ -37,8 +37,8 @@ def vfi_ls_error(n_agents, t1, t2, num_points, restart_fstr, params, output_path
                 gp_new = pickle.load(fd_new)
                 logger.info("data from iteration step %d loaded from disk" % (i+1))
 
-            y_pred_old, sigma_old = gp_old.predict(k_sample, return_std=True)
-            y_pred_new, sigma_new = gp_new.predict(k_sample, return_std=True)
+            y_pred_old, sigma_old = gp_old(k_sample, return_std=True)
+            y_pred_new, sigma_new = gp_new(k_sample, return_std=True)
 
             # plot predictive mean and 95% quantiles
             #for j in range(num_points):

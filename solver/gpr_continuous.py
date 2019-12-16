@@ -11,21 +11,18 @@
 
 import numpy as np
 import logging
-import sys
 logger = logging.getLogger(__name__)
 logger.write = lambda msg: logger.info(msg.decode('utf-8')) if msg.strip(
 ) != '' else None
 import pickle
 
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, WhiteKernel, Matern
-
 from . import nonlinear_solver as solver
 from utils import stdout_redirector
+from estimator.gpr import GPR
 
 
-def GPR_iter(model, iteration, V_tp1=None, num_samples = 20):
-    logger.info("Beginning Step %d" % iteration)
+def VFI_iter(model, V_tp1=None, num_samples = 20):
+    logger.info("Beginning VFI Step")
 
     #fix seed
     np.random.seed(666)
@@ -43,10 +40,9 @@ def GPR_iter(model, iteration, V_tp1=None, num_samples = 20):
 
     # Instantiate a Gaussian Process model
     # Fit to data using Maximum Likelihood Estimation of the parameters
-    kernel = RBF()
-    V_t = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=9)
+    V_t = GPR()
     V_t.fit(Xtraining, y)
 
-    logger.info("Finished Step %d" % iteration)
+    logger.info("Finished VFI Step")
 
     return V_t

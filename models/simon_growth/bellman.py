@@ -51,7 +51,8 @@ def EV_F_ITER(X_t, U, params, V_tp1, *args):
     Xtest[0, :] = X_tp1_cube
 
     # interpolate the function, and get the point-wise std.
-    V_old, sigma_test = V_tp1.predict(Xtest, return_std=True)
+    # V_old, sigma_test = V_tp1(Xtest, return_std=True)
+    V_old = V_tp1(Xtest)
 
     VT_sum = dynamics.utility(cons, lab, params) + params.beta * V_old
 

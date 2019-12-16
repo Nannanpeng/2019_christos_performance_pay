@@ -10,7 +10,7 @@ import yaml
 import random
 
 import utils
-from solver.gpr_continuous import GPR_iter
+from solver.gpr_continuous import VFI_iter
 from models.simon_growth import SimonGrowthModel
 
 _ITER_LOG_STR = """
@@ -61,10 +61,7 @@ def fit_model(run_config):
     for i in range(run_config['max_updates']):
         V_tp1 = V_t
         logger.info("Value Function Iteration -- Step %d" % i)
-        V_t = GPR_iter(model,
-                       i,
-                       V_tp1,
-                       num_samples=algorithm_config.No_samples)
+        V_t = VFI_iter(model, V_tp1, num_samples=algorithm_config.No_samples)
         utils.save_checkpoint(V_t, cp_fstr % i)
 
     logger.info(_ITER_LOG_STR %
