@@ -11,6 +11,9 @@ import ipyopt
 # V_tp1 should be none if this is first iteration of VFI
 def solve(model, X, **kwargs):
 
+    tol = 1e-6 if 'tol' not in kwargs else kwargs['tol']
+    acceptable_tol = 1e-5 if 'acceptable_tol' not in kwargs else kwargs['acceptable_tol']
+
     # IPOPT PARAMETERS below
     N = model.dim.control
     M = model.dim.constraints
@@ -45,8 +48,8 @@ def solve(model, X, **kwargs):
                          eval_g, eval_jac_g)
 
     nlp.set(obj_scaling_factor=-1.00,
-            tol=1e-6,
-            acceptable_tol=1e-5,
+            tol=tol,
+            acceptable_tol=acceptable_tol,
             derivative_test='first-order',
             hessian_approximation="limited-memory")
             # print_level=0)

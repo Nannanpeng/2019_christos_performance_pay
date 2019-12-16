@@ -58,7 +58,8 @@ def fit_model(run_config):
     V_tp1, V_t = None, None
 
     # Value Function Iteration
-    for i in range(parameters.T,0,-1):
+    for i in range(parameters.T,parameters.T-2,-1):
+        # import pdb; pdb.set_trace()
         V_tp1 = V_t
         logger.info("Value Function Iteration -- Step %d" % i)
         V_t = VFI_iter(model, V_tp1, num_samples=algorithm_config.No_samples)
@@ -68,10 +69,7 @@ def fit_model(run_config):
                 (parameters.n_agents, run_config['max_updates']))
 
     # Compute Value function errors, write to disk
-    err_path = '%s/errors.txt' % (run_config['odir'])
-    avg_err = utils.metrics.vfi_ls_error(
-        parameters.n_agents, 0, run_config['max_updates'],
-        algorithm_config.No_samples_postprocess, cp_fstr, parameters, err_path)
+    plots_path = '%s/plot_value.pdf' % (run_config['odir'])
 
     end = time.time()
     logger.info('Time elapsed: %.3f' % (end - start))
