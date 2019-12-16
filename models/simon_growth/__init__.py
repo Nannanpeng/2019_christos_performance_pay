@@ -2,7 +2,7 @@ import numpy as np
 
 from solver import IPOptCallback
 from . import bellman, dynamics
-
+import utils.math as mu
 
 class SimonGrowthModel:
     def __init__(self, params):
@@ -18,24 +18,28 @@ class SimonGrowthModel:
 
     # returns gradient of val function (ie deriv transpose)
     def value_deriv(self, X, U, V_tp1=None):
+        F = None
         if V_tp1 is None:
-            return bellman.EV_GRAD_F(X, U, self.params)
-        return bellman.EV_GRAD_F_ITER(X, U, self.params, V_tp1)
+            F = lambda U: bellman.EV_F(X, U, self.params)
+        else:
+            F = lambda U: bellman.EV_F_ITER(X, U, self.params, V_tp1)
+        return mu.derivative_fd(F,U)
 
     @property
     def value_hess_sparsity(self):
-        return bellman.sparsity_hess(self.N)
+        return mu.dense_hessian(self.N)
 
     def constraints(self, X, U):
         return dynamics.EV_G(X, U, self.params)
 
     # returns derivative (jacobian) of constraint set
     def constraints_deriv(self, X, U):
-        return dynamics.EV_JAC_G(X, U, self.params)
+        F = lambda U: dynamics.EV_G(X,U,self.params)
+        return mu.jacobian_fd(F, U, self.N,self.M)
 
     @property
     def constraints_deriv_sparsity(self):
-        return dynamics.sparsity_jac_g(self.N, self.M)
+        return mu.dense_jacobian(self.N, self.M)
 
     @property
     def bounds_control(self):

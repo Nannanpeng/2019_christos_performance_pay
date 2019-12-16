@@ -12,9 +12,10 @@ __all__ = ['make_directory', 'run_config_from_args', 'gpr_argparser']
 def make_directory(dirpath):
     os.makedirs(dirpath, exist_ok=True)
 
-def _resolve_attr(spec,args,attrname, conversion = None):
-    val = getattr(spec,attrname, None)
-    val = val if val is not None else getattr(args,attrname,None)
+
+def _resolve_attr(spec, args, attrname, conversion=None):
+    val = getattr(spec, attrname, None)
+    val = val if val is not None else getattr(args, attrname, None)
     if conversion is not None and val is not None:
         return conversion(val)
     return val
@@ -22,23 +23,33 @@ def _resolve_attr(spec,args,attrname, conversion = None):
 
 def run_config_from_args(args):
     spec = yaml_to_spec(load_yaml(args.spec))
-    odir_alt = 'out/%s_%s' % (spec.model.name, time.strftime("%Y.%m.%d_%H.%M.%S"))
+    odir_alt = 'out/%s_%s' % (spec.model.name,
+                              time.strftime("%Y.%m.%d_%H.%M.%S"))
     run_config = {
-        'debug': args.debug,
-        'terminal': args.terminal,
-        'odir': args.odir if args.odir is not None else odir_alt,
-        'model': spec.model,
-        'seed': _resolve_attr(spec.algorithm_config,args,'seed',int),
-        'tolerance': _resolve_attr(spec.algorithm_config,args,'tolerance',int),
-        'max_updates': _resolve_attr(spec.algorithm_config,args,'max_updates',int),
-        'save_interval': _resolve_attr(spec.algorithm_config,args,'save_interval',int),
-        'algorithm_config': spec.algorithm_config
+        'debug':
+        args.debug,
+        'terminal':
+        args.terminal,
+        'odir':
+        args.odir if args.odir is not None else odir_alt,
+        'model':
+        spec.model,
+        'seed':
+        _resolve_attr(spec.algorithm_config, args, 'seed', int),
+        'tolerance':
+        _resolve_attr(spec.algorithm_config, args, 'tolerance', int),
+        'max_updates':
+        _resolve_attr(spec.algorithm_config, args, 'max_updates', int),
+        'save_interval':
+        _resolve_attr(spec.algorithm_config, args, 'save_interval', int),
+        'algorithm_config':
+        spec.algorithm_config
     }
 
     return run_config
 
 
-def gpr_argparser():
+def gpr_argparser(default_spec="./specs/simon_gpr.yaml"):
     parser = argparse.ArgumentParser()
     parser.add_argument("-o",
                         "--odir",
@@ -64,7 +75,7 @@ def gpr_argparser():
     parser.add_argument("-s",
                         '--spec',
                         type=str,
-                        default="./specs/simon_gpr.yaml",
+                        default=default_spec,
                         help="What model / spec to load")
     parser.add_argument("-t",
                         "--terminal",

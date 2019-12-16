@@ -6,6 +6,8 @@ import numpy as np
 import copy
 from scipy.optimize import fminbound
 
+from .differentiate import jacobian_fd, dense_jacobian, derivative_fd, dense_hessian
+
 # Maximize function V on interval [a,b]
 def maximum(V, a, b):
     return float(V(fminbound(lambda x: -V(x), a, b)))

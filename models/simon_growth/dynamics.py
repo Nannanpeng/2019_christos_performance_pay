@@ -48,19 +48,6 @@ def EV_JAC_G(X_t, U, params):
             A[iuN + iuM * N] = (gu2[iuM] - gu1[iuM]) / h
     return A
 
-
-def sparsity_jac_g(N, M):
-    NZ = M * N
-    ACON = np.empty(NZ, int)
-    AVAR = np.empty(NZ, int)
-    for iuM in range(M):
-        for iuN in range(N):
-            ACON[iuN + (iuM) * N] = iuM
-            AVAR[iuN + (iuM) * N] = iuN
-
-    return (ACON, AVAR)
-
-
 def utility(cons=[], lab=[], params=None):
     sum_util = 0.0
     n = len(cons)
