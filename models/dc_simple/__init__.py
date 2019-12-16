@@ -11,11 +11,13 @@ class DCSimple:
         self.dim = ModelDimensions(1,1,1)
 
     # state-action value function
-    def value(self, X, U, V_tp1=None):
+    def value(self, X, U, U_k = None, V_tp1=None):
+        assert U_k is not None, "Must specify discrete action"
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
         return bellman.state_action_value(X, U, self.params)
 
-    def value_deriv(self, X, U, V_tp1=None):
+    def value_deriv(self, X, U, U_k = None, V_tp1=None):
+        assert U_k is not None, "Must specify discrete action"
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
         F = lambda U: bellman.state_action_value(X, U, self.params, V_tp1)
         return mu.derivative_fd(F,U)

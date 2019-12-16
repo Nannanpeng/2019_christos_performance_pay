@@ -9,7 +9,7 @@ import ipyopt
 
 
 # V_tp1 should be none if this is first iteration of VFI
-def solve(model, X, V_tp1=None):
+def solve(model, X, **kwargs):
 
     # IPOPT PARAMETERS below
     N = model.dim.control
@@ -21,19 +21,19 @@ def solve(model, X, V_tp1=None):
 
     # Create callback functions
     def eval_f(U):
-        out = model.value(X, U, V_tp1)
+        out = model.value(X, U, **kwargs)
         return out
 
     def eval_grad_f(U, out):
-        out[()] = model.value_deriv(X, U, V_tp1)
+        out[()] = model.value_deriv(X, U, **kwargs)
         return out
 
     def eval_g(U, out):
-        out[()] = model.constraints(X, U)
+        out[()] = model.constraints(X, U, **kwargs)
         return out
 
     def eval_jac_g(U, out):
-        out[()] = model.constraints_deriv(X, U)
+        out[()] = model.constraints_deriv(X, U, **kwargs)
         return out
 
     ipyopt.set_loglevel(ipyopt.LOGGING_DEBUG)
