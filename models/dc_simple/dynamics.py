@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def transition(X_t, U_t, d_t, params=None):
-    X_tp1 = params.R*(X_t - U) + params.y*d_t
+def transition(X_t, U_t, U_k, params=None):
+    X_tp1 = params.R*(X_t - U) + params.y*U_k
     return fun_val
 
 
@@ -15,9 +15,9 @@ def EV_G(X_t, U, params):
     return G
 
 
-def utility(U_t, d_t, params=None):
+def utility(U_t, U_k, params=None):
     import pdb; pdb.set_trace()
-    util = np.log(U_t) - d_t
+    util = np.log(U_t) - U_k
     
     return util
 

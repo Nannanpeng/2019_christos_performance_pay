@@ -32,12 +32,13 @@ def VFI_iter(model, V_tp1=None, num_samples = 20):
     K = model.num_choices
     Xtraining = np.random.uniform(model.params.k_bar, model.params.k_up,
                                   (num_samples, dim))
-    y = np.zeros(num_samples, float)  # training targets
+    y = np.zeros((num_samples,model.num_choices), float)  # training targets
 
     # solve bellman equations at training points
     # with stdout_redirector(logger):
-    for iI in range(len(Xtraining)):
-        y[iI] = solver.solve(model, Xtraining[iI], V_tp1=V_tp1)[0]
+    for k in range(model.num_choices):
+        for iI in range(len(Xtraining)):
+            y[iI,k] = solver.solve(model, Xtraining[iI], V_tp1 = V_tp1, U_k = k)[0]
 
     # Instantiate a Gaussian Process model
     # Fit to data using Maximum Likelihood Estimation of the parameters

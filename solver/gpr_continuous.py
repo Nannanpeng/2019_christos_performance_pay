@@ -36,7 +36,7 @@ def VFI_iter(model, V_tp1=None, num_samples = 20):
     # solve bellman equations at training points
     # with stdout_redirector(logger):
     for iI in range(len(Xtraining)):
-        y[iI] = solver.solve(model, Xtraining[iI], V_tp1 = V_tp1)[0]
+        y[iI] = solver.solve(model, Xtraining[iI], V_tp1=V_tp1)[0]
 
     # Instantiate a Gaussian Process model
     # Fit to data using Maximum Likelihood Estimation of the parameters
