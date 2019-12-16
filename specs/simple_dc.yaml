@@ -1,0 +1,34 @@
+
+name: DC_Simple
+parameters:
+  beta:
+    kind: float
+    value: 0.8    
+  R: 
+    kind: float
+    value: 1.10
+  k_bar: 
+    kind: float
+    value: 0.2
+  k_up: 
+    kind: float
+    value: 3.0
+  range_cube: 
+    kind: float
+    value: 2.8
+  c_bar: 
+    kind: float
+    value: 0.01
+  c_up: 
+    kind: float
+    value: 10.0
+  T:
+    kind: int
+    value: 
+
+
+# Run Configuration
+algorithmConfig:
+  No_samples:
+    kind: int
+    value: 20

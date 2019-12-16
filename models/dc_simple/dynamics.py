@@ -30,37 +30,6 @@ def EV_G(X_t, U, params):
     return G
 
 
-def EV_JAC_G(X_t, U, params):
-    N = len(U)
-    M = 3 * params.n_agents + 1
-    NZ = M * N
-    A = np.empty(NZ, float)
-
-    # Finite Differences
-    h = 1e-4
-    gu1 = EV_G(X_t, U, params)
-
-    for iuM in range(M):
-        for iuN in range(N):
-            uAdj = np.copy(U)
-            uAdj[iuN] = uAdj[iuN] + h
-            gu2 = EV_G(X_t, uAdj, params)
-            A[iuN + iuM * N] = (gu2[iuM] - gu1[iuM]) / h
-    return A
-
-
-def sparsity_jac_g(N, M):
-    NZ = M * N
-    ACON = np.empty(NZ, int)
-    AVAR = np.empty(NZ, int)
-    for iuM in range(M):
-        for iuN in range(N):
-            ACON[iuN + (iuM) * N] = iuM
-            AVAR[iuN + (iuM) * N] = iuN
-
-    return (ACON, AVAR)
-
-
 def utility(cons=[], lab=[], params=None):
     sum_util = 0.0
     n = len(cons)
@@ -97,19 +66,7 @@ def control_bounds(params):
     U_L[2 * n_agents:3 * n_agents] = params.inv_bar
     U_U[2 * n_agents:3 * n_agents] = params.inv_up
 
-    # initial guesses for first iteration
-    cons_init = 0.5 * (U_U[:n_agents] - U_L[:n_agents]) + U_L[:n_agents]
-    lab_init = 0.5 * (U_U[n_agents:2 * n_agents] -
-                      U_L[n_agents:2 * n_agents]) + U_L[n_agents:2 * n_agents]
-    inv_init = 0.5 * (U_U[2 * n_agents:3 * n_agents] -
-                      U_L[2 * n_agents:3 * n_agents]) + U_L[2 * n_agents:3 *
-                                                            n_agents]
-
-    U[:n_agents] = cons_init
-    U[n_agents:2 * n_agents] = lab_init
-    U[2 * n_agents:3 * n_agents] = inv_init
-
-    return U, U_L, U_U
+    return U_L, U_U
 
 
 def constraint_bounds(params):

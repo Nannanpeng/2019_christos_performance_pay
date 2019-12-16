@@ -16,10 +16,7 @@ def state_value(X_t, U, params, *args):
 
 # Terminal value function
 def V_T(X=[], params=None):
-    e = np.ones(len(X))
-    c = dynamics.output_f(X, e, params)
-    v_infinity = dynamics.utility(c, e, params) / (1 - params.beta)
-    return v_infinity
+    return 0.0
 
 
 #=======================================================================
@@ -48,53 +45,3 @@ def EV_F_ITER(X_t, U, params, V_tp1, *args):
     VT_sum = dynamics.utility(cons, lab, params) + params.beta * V_old
 
     return VT_sum
-
-
-#=======================================================================
-#   Computation of gradient (first order finite difference) of initial objective function
-
-def EV_GRAD_F(X_t, U, params, *args):
-    return _EV_GRAD_F_IMPL(X_t,U,params,EV_F)
-
-def EV_GRAD_F_ITER(X_t, U, params, V_tp1, *args):
-    return _EV_GRAD_F_IMPL(X_t,U,params,EV_F_ITER,V_tp1)
-
-def _EV_GRAD_F_IMPL(X_t, U, params, _EV_F, V_tp1 = None):
-    N = len(U)
-    GRAD = np.zeros(N, float)  # Initial Gradient of Objective Function
-    h = 1e-4
-
-    for iuN in range(N):
-        uAdj = np.copy(U)
-
-        if (uAdj[iuN] - h >= 0):
-            uAdj[iuN] = U[iuN] + h
-            fu2 = _EV_F(X_t, uAdj, params, V_tp1)
-
-            uAdj[iuN] = U[iuN] - h
-            fu1 = _EV_F(X_t, uAdj, params, V_tp1)
-
-            GRAD[iuN] = (fu2 - fu1) / (2.0 * h)
-
-        else:
-            uAdj[iuN] = U[iuN] + h
-            fu2 = _EV_F(X_t, uAdj, params, V_tp1)
-
-            uAdj[iuN] = U[iuN]
-            fu1 = _EV_F(X_t, uAdj, params, V_tp1)
-            GRAD[iuN] = (fu2 - fu1) / h
-
-    return GRAD
-
-def sparsity_hess(N):
-    NZ = (N**2 - N) // 2 + N
-    A1 = np.empty(NZ, int)
-    A2 = np.empty(NZ, int)
-    idx = 0
-    for ixI in range(N):
-        for ixJ in range(ixI + 1):
-            A1[idx] = ixI
-            A2[idx] = ixJ
-            idx += 1
-
-    return (A1, A2)
