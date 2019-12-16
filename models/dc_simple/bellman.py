@@ -5,11 +5,11 @@ from . import dynamics
 from . import utils
 
 
-def state_value(X_t, U, params, *args):
+def state_action_value(X_t, U, params, V_tp1, *args):
 
     # Compute Value Function
     VT_sum = dynamics.utility(
-        cons, lab, params) + params.beta * V_INFINITY(X_tp1, params)
+        cons, lab, params) + params.beta * V_tp1(X_tp1, params)
 
     return VT_sum
 

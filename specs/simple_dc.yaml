@@ -9,22 +9,19 @@ parameters:
     value: 1.10
   k_bar: 
     kind: float
-    value: 0.2
+    value: 0.01
   k_up: 
     kind: float
-    value: 3.0
-  range_cube: 
-    kind: float
-    value: 2.8
+    value: 500
   c_bar: 
     kind: float
     value: 0.01
   c_up: 
     kind: float
-    value: 10.0
+    value: 1e10
   T:
     kind: int
-    value: 
+    value: 20
 
 
 # Run Configuration

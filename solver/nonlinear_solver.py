@@ -12,8 +12,8 @@ import ipyopt
 def solve(model, X, V_tp1=None):
 
     # IPOPT PARAMETERS below
-    N = model.N
-    M = model.M
+    N = model.dim.control
+    M = model.dim.constraints
 
     U_L, U_U = model.bounds_control
     U = 0.5*(U_U - U_L) + U_L

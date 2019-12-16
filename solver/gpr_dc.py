@@ -28,7 +28,8 @@ def VFI_iter(model, V_tp1=None, num_samples = 20):
     np.random.seed(666)
 
     #generate sample aPoints
-    dim = model.params.n_agents
+    dim = model.N
+    K = 
     Xtraining = np.random.uniform(model.params.k_bar, model.params.k_up,
                                   (num_samples, dim))
     y = np.zeros(num_samples, float)  # training targets

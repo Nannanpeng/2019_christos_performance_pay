@@ -3,12 +3,13 @@ import numpy as np
 from solver import IPOptCallback
 from . import bellman, dynamics
 import utils.math as mu
+from models import ModelDimensions
+
 
 class SimonGrowthModel:
     def __init__(self, params):
         self.params = params
-        self.N = 3 * params.n_agents
-        self.M = 3 * params.n_agents + 1
+        self.dim = ModelDimensions(3 * params.n_agents, 3 * params.n_agents + 1, params.n_agents)
 
     # state-action value function
     def value(self, X, U, V_tp1=None):
@@ -27,7 +28,7 @@ class SimonGrowthModel:
 
     @property
     def value_hess_sparsity(self):
-        return mu.dense_hessian(self.N)
+        return mu.dense_hessian(self.dim.control)
 
     def constraints(self, X, U):
         return dynamics.EV_G(X, U, self.params)
@@ -35,11 +36,11 @@ class SimonGrowthModel:
     # returns derivative (jacobian) of constraint set
     def constraints_deriv(self, X, U):
         F = lambda U: dynamics.EV_G(X,U,self.params)
-        return mu.jacobian_fd(F, U, self.N,self.M)
+        return mu.jacobian_fd(F, U, self.dim.control,self.dim.constraints)
 
     @property
     def constraints_deriv_sparsity(self):
-        return mu.dense_jacobian(self.N, self.M)
+        return mu.dense_jacobian(self.dim.control,self.dim.constraints)
 
     @property
     def bounds_control(self):
