@@ -1,5 +1,6 @@
 import numpy as np
 
+from . import utils
 
 def transition(X_t, U_t, U_k, params=None):
     X_tp1 = params.R*(X_t - U_t) + params.wage*U_k
@@ -12,6 +13,9 @@ def EV_G(X_t, U, params):
     G = np.empty(M, float)
     
     G = X_t - U
+    if utils.test_inf_nan(G):
+        import pdb; pdb.set_trace()
+
     return G
 
 
@@ -38,7 +42,7 @@ def constraint_bounds(params):
     G_U = np.zeros(M,float)
 
     # Set bounds for the constraints
-    G_L[0] = 0
+    G_L[0] = 0.00
     G_U[0] = 1e10
 
     return G_L, G_U

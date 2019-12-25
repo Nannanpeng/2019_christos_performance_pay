@@ -1,3 +1,5 @@
+import numpy as np
+
 # transformation to comp domain -- range of [k_bar, k_up]
 def box_to_cube(knext=[], params=None):
     n = len(knext)
@@ -20,3 +22,9 @@ def box_to_cube(knext=[], params=None):
         knext_box[i] = (knext_dummy[i] - params.k_bar) * scaling_dept
 
     return knext_box
+
+
+def test_inf_nan(val):
+    if sum(np.isinf(val)) > 0 or sum(np.isnan(val)) > 0:
+        return True
+    return False

@@ -16,7 +16,7 @@ logger.write = lambda msg: logger.info(msg.decode('utf-8')) if msg.strip(
 ) != '' else None
 import pickle
 
-from . import nonlinear_solver as solver
+from . import solver_ipopt as solver
 from utils import stdout_redirector
 from estimator.gpr_dc import GPR_DC
 

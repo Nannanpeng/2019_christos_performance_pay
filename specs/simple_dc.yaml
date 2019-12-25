@@ -1,6 +1,10 @@
 
 name: DC_Simple
 parameters:
+  # Taste shock variance
+  sigma_e:
+    kind: float
+    value: 0.01
   beta:
     kind: float
     value: 0.8    

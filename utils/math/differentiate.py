@@ -1,5 +1,11 @@
 import numpy as np
 
+
+def test_inf_nan(val):
+    if sum(np.isinf(val)) > 0 or sum(np.isnan(val)) > 0:
+        return True
+    return False
+
 def derivative_fd(F,X,h = 1e-4):
     N = len(X)
     D = np.zeros(N,float)
@@ -17,6 +23,9 @@ def derivative_fd(F,X,h = 1e-4):
             dX[ixN] = X[ixN]
             F1 = F(dX)
             D[ixN] = (F2 - F1) / h
+
+    if test_inf_nan(D):
+        import pdb; pdb.set_trace()
 
     return D
 
@@ -37,6 +46,10 @@ def jacobian_fd(F,X,N,M):
             dX[ixN] = dX[ixN] + h
             F2 = F(dX)
             D[ixN + ixM * N] = (F2[ixM] - F1[ixM]) / h
+
+    if test_inf_nan(D):
+        import pdb; pdb.set_trace()
+
     return D
 
 # Jacobian sparsity pattern
