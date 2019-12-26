@@ -62,7 +62,7 @@ def fit_model(run_config):
         V_tp1 = V_t
         logger.info("Value Function Iteration -- Step %d" % i)
         V_t = VFI_iter(model, V_tp1, num_samples=algorithm_config.No_samples)
-        utils.save_checkpoint(V_t, cp_fstr % i)
+        utils.save_model(V_t, cp_fstr % i)
 
     logger.info(_ITER_LOG_STR %
                 (parameters.n_agents, run_config['max_updates']))

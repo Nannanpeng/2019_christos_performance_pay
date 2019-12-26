@@ -32,18 +32,18 @@ if __name__ == '__main__':
     # PLOTTING CONFIG
     sns.set(context='paper',style="darkgrid",rc=plot_style)
     V_T = None
-    with open('./out/DC_Simple_2019.12.16_18.02.47/restart_20.pcl', 'rb') as fd:
+    with open('./out/DC_Simple_2019.12.25_20.28.38/policy_19.pcl', 'rb') as fd:
         V_T = pickle.load(fd)
 
     # SETUP
     X = np.linspace(0,500,num=200)
     # import pdb; pdb.set_trace()
     Y = V_T(X.reshape(-1,1),maximum=True)
-    data = {'Consumption': X, 'Value': Y} 
+    data = {'Assets': X, 'Consumption': Y} 
   
     # Create DataFrame 
     df = pd.DataFrame(data)
-    ax = sns.lineplot(x='Consumption', y='Value', data=df)
+    ax = sns.lineplot(x='Assets', y='Consumption', data=df)
     plt.show()
 
 

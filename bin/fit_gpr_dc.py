@@ -54,7 +54,8 @@ def fit_model(run_config):
     parameters = model_spec.parameters
     model = DCSimple(parameters)
 
-    cp_fstr = '%s/restart_%%d.pcl' % (run_config['odir'])
+    v_fstr = '%s/value_%%d.pcl' % (run_config['odir'])
+    p_fstr = '%s/policy_%%d.pcl' % (run_config['odir'])
     V_tp1, V_t = None, None
 
     # Value Function Iteration
@@ -62,8 +63,9 @@ def fit_model(run_config):
         # import pdb; pdb.set_trace()
         V_tp1 = V_t
         logger.info("Value Function Iteration -- Step %d" % i)
-        V_t = VFI_iter(model, V_tp1, num_samples=algorithm_config.No_samples)
-        utils.save_checkpoint(V_t, cp_fstr % i)
+        V_t, P_t = VFI_iter(model, V_tp1, num_samples=algorithm_config.No_samples)
+        utils.save_model(V_t, v_fstr % i)
+        utils.save_model(P_t, p_fstr % i)
 
     logger.info(_ITER_LOG_STR % run_config['max_updates'])
 

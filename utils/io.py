@@ -13,7 +13,7 @@ from collections import namedtuple
 
 __all__ = [
     'struct_factory', 'yaml_to_spec', 'load_yaml', 'stdout_redirector',
-    'save_checkpoint', 'load_checkpoint', 'ModelSpec'
+    'save_model', 'load_model', 'ModelSpec'
 ]
 
 ModelSpec = namedtuple('ModelSpec',
@@ -25,20 +25,20 @@ def struct_factory(name, dictionary):
     return namedtuple(name, dictionary.keys())(**dictionary)
 
 
-def load_checkpoint(path):
+def load_model(path):
     logger.info('Input file: %s' % path)
     V = None
     with open(path, 'rb') as fd_old:
         V = pickle.load(fd_old)
-        logger.info("Saved checkpoint at path %s loaded from disk" % path)
+        logger.info("Saved model at path %s loaded from disk" % path)
     return V
 
 
-def save_checkpoint(V, path):
+def save_model(V, path):
     logger.info('Output file: %s' % path)
     with open(path, 'wb') as fd:
         pickle.dump(V, fd, protocol=pickle.HIGHEST_PROTOCOL)
-        logger.info("Saved checkpoint written to disk at path: %s" % path)
+        logger.info("Saved model written to disk at path: %s" % path)
 
 
 def _load_value(kind, val):
