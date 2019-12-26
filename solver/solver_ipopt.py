@@ -52,7 +52,7 @@ def solve(model, X, **kwargs):
             acceptable_tol=acceptable_tol,
             derivative_test='first-order',
             hessian_approximation="limited-memory",
-            print_level=0)
+            print_level=12)
 
     z_l = np.zeros(N)
     z_u = np.zeros(N)
@@ -62,10 +62,5 @@ def solve(model, X, **kwargs):
                                mult_x_L=z_l,
                                mult_x_U=z_u)
     logger.info("Ipopt status: %s" % status)
-    # Unpack Consumption, Labor, and Investment
-    # c = x[:n_agents]
-    # l = x[n_agents:2 * n_agents]
-    # inv = x[2 * n_agents:3 * n_agents]
-    # return obj, c, l, inv
 
     return obj, u
