@@ -20,9 +20,10 @@ class GPR_DC:
             return np.amax(all_preds,axis=1).reshape(-1,)
         if k is not None:
             return self._impl[k].predict(X,**kwargs)
-        
-        raise RuntimeError('Should not reach here....')
-        return self._all_preds(X,k,**kwargs)
+
+        res = self._all_preds(X,k,**kwargs)
+        res = res.reshape(-1,) # reshape to make sure 1D array
+        return res
 
     def fit(self,X,y):
         assert y.shape[1] == self.num_choices, "Y should be array with width num_choices"

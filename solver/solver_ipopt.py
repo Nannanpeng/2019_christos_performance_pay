@@ -52,7 +52,7 @@ def solve(model, X, **kwargs):
             acceptable_tol=acceptable_tol,
             derivative_test='first-order',
             hessian_approximation="limited-memory",
-            print_level=12)
+            print_level=0)
 
     z_l = np.zeros(N)
     z_u = np.zeros(N)

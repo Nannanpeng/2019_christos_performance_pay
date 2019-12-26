@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.optimize as opt
 
 from solver import IPOptCallback
 from . import bellman, dynamics
@@ -21,7 +22,8 @@ class DCSimple:
         assert U_k is not None, "Must specify discrete action"
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
         F = lambda U: bellman.state_action_value(X, U, U_k, self.params, V_tp1)
-        return mu.derivative_fd(F,U)
+        res = opt.approx_fprime(U,F,1e-8)
+        return res
 
     @property
     def value_hess_sparsity(self):
@@ -33,7 +35,7 @@ class DCSimple:
     # returns derivative (jacobian) of constraint set
     def constraints_deriv(self, X, U, **kwargs):
         F = lambda U: dynamics.EV_G(X,U,self.params)
-        return mu.jacobian_fd(F, U, self.dim.control,self.dim.constraints)
+        return opt.approx_fprime(U,F,1e-8)
 
     @property
     def constraints_deriv_sparsity(self):

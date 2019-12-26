@@ -15,7 +15,7 @@ from models.dc_simple import DCSimple
 
 _ITER_LOG_STR = """
 ===============================================================
-Computation of a growth model of dimension %d
+Computation of a lifetime consumption with retirement model
 finished after %d steps
 ===============================================================
 """
@@ -65,8 +65,7 @@ def fit_model(run_config):
         V_t = VFI_iter(model, V_tp1, num_samples=algorithm_config.No_samples)
         utils.save_checkpoint(V_t, cp_fstr % i)
 
-    logger.info(_ITER_LOG_STR %
-                (parameters.n_agents, run_config['max_updates']))
+    logger.info(_ITER_LOG_STR % run_config['max_updates'])
 
     # Compute Value function errors, write to disk
     plots_path = '%s/plot_value.pdf' % (run_config['odir'])

@@ -12,14 +12,11 @@ def state_action_value(X_t, U_t, U_k, params, V_tp1, *args):
     # VT_sum = dynamics.utility(U_t,U_k) + params.beta * V_tp1(X_tp1.reshape(-1,1), maximum=True)[0]
     # Retiree cannot resume work
     W_tp1 = 0.0
-    # if V_tp1 != V_T:
-    #     import pdb; pdb.set_trace()
     if U_k == 0:
         W_tp1 =  V_tp1(X_tp1.reshape(-1,1),k=0)[0]
     else:
         V = V_tp1(X_tp1.reshape(-1,1))
         W_tp1 = params.sigma_e * np.log(sum(np.exp(V / params.sigma_e)))
-
 
     VT_sum = dynamics.utility(U_t,U_k) + params.beta * W_tp1
 

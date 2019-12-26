@@ -1,5 +1,5 @@
 import numpy as np
-
+import scipy.optimize as opt
 
 def test_inf_nan(val):
     if sum(np.isinf(val)) > 0 or sum(np.isnan(val)) > 0:
@@ -30,25 +30,26 @@ def derivative_fd(F,X,h = 1e-4):
     return D
 
 
-def jacobian_fd(F,X,N,M):
-    assert N == len(X), "X is not same dimension as N"
+def jacobian_fd(F,X,M,eps=1e-8):
     N = len(X)
     NZ = M * N
     D = np.empty(NZ, float)
 
     # Finite Differences
-    h = 1e-4
-    F1 = F(X)
 
     for ixM in range(M):
-        for ixN in range(N):
-            dX = np.copy(X)
-            dX[ixN] = dX[ixN] + h
-            F2 = F(dX)
-            D[ixN + ixM * N] = (F2[ixM] - F1[ixM]) / h
+        F_i = lambda x : F(x,constraint=ixM)
+        D[ixM*N:(ixM+1)*N] = approx_fprime(X,F_i, eps)
 
-    if test_inf_nan(D):
-        import pdb; pdb.set_trace()
+    # for ixM in range(M):
+    #     for ixN in range(N):
+    #         dX = np.copy(X)
+    #         dX[ixN] = dX[ixN] + h
+    #         F2 = F(dX)
+    #         D[ixN + ixM * N] = (F2[ixM] - F1[ixM]) / h
+
+    # if test_inf_nan(D):
+    #     import pdb; pdb.set_trace()
 
     return D
 

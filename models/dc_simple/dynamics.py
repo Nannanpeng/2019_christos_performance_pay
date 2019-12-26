@@ -7,15 +7,14 @@ def transition(X_t, U_t, U_k, params=None):
     return X_tp1
 
 
-def EV_G(X_t, U, params):
+def EV_G(X_t, U, params,constraint=None):
+    if constraint is not None:
+        return X_t[constraint] - U[constraint]
+
     N = len(U)
     M = N
     G = np.empty(M, float)
-    
     G = X_t - U
-    if utils.test_inf_nan(G):
-        import pdb; pdb.set_trace()
-
     return G
 
 
