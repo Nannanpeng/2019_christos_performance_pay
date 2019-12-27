@@ -8,7 +8,6 @@ import numpy as np
 import ipyopt
 
 
-# V_tp1 should be none if this is first iteration of VFI
 def solve(model, X, **kwargs):
 
     tol = 1e-6 if 'tol' not in kwargs else kwargs['tol']
@@ -52,7 +51,7 @@ def solve(model, X, **kwargs):
             acceptable_tol=acceptable_tol,
             derivative_test='first-order',
             hessian_approximation="limited-memory",
-            print_level=12)
+            print_level=0)
 
     z_l = np.zeros(N)
     z_u = np.zeros(N)
