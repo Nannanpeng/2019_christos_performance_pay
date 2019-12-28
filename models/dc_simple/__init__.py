@@ -22,7 +22,8 @@ class DCSimple:
         assert U_k is not None, "Must specify discrete action"
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
         F = lambda U: bellman.state_action_value(X, U, U_k, self.params, V_tp1)
-        res = opt.approx_fprime(U,F,1e-8)
+        # res = opt.approx_fprime(U,F,1e-8)
+        res = mu.derivative_fd(F,U)
         return res
 
     @property
