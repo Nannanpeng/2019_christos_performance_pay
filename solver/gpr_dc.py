@@ -33,8 +33,21 @@ def _run_one(args):
     y_f, y_u = solver.solve(model, x, V_tp1 = V_tp1, U_k = k)
     return y_f, y_u[0]
 
+
+def _run_set(X,k, model_str, V_tp1, y_f, y_u):
+    with ProcessPoolExecutor(max_workers=2) as executor:
+        args_training = [(x, model_str, V_tp1, k) for x in X]
+        try:
+            results = executor.map(_run_one,args_training)
+            for idx, (y_f_i, y_u_i) in enumerate(results):
+                print('Index: %s. Results: (%.3f,%.3f)' % (idx,y_f_i,y_u_i))
+                y_f[idx,k] = y_f_i
+                y_u[idx,k] = y_u_i
+        except BrokenProcessPool as e:
+            print('Broken process')
+            print(e)
+
 def _run_iters(model,num_samples, V_tp1):
-    #fix seed
     np.random.seed(666)
 
     dim = model.dim.state
@@ -44,18 +57,10 @@ def _run_iters(model,num_samples, V_tp1):
     y_u = np.zeros((num_samples,model.num_choices), float)  # training targets, policy
 
     model_str = dill.dumps(model) # dill can correctly serialize model parameters
-    with ProcessPoolExecutor(max_workers=2) as executor:
-        for k in range(model.num_choices):
-            args_training = [(x, model_str, V_tp1, k) for x in X]
-            try:
-                results = executor.map(_run_one,args_training)
-                for idx, (y_f_i, y_u_i) in enumerate(results):
-                    print('Index: %s. Results: (%.3f,%.3f)' % (idx,y_f_i,y_u_i))
-                    y_f[idx,k] = y_f_i
-                    y_u[idx,k] = y_u_i
-            except BrokenProcessPool as e:
-                print('Broken process')
-                print(e)
+    for k in range(model.num_choices):
+        _run_set(X,k,model_str,V_tp1,y_f,y_u)
+
+    print(y_f)
 
     return X, y_f, y_u
 
