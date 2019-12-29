@@ -77,8 +77,5 @@ def _evaluate_vf(model,num_samples, V_tp1):
     for k in range(model.num_choices):
         _run_set(X,k,model_str,V_tp1,y_f,y_u)
 
-
-    print(y_f)
-    print(y_u)
     return X, y_f, y_u
 

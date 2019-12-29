@@ -28,4 +28,9 @@ class GPR_DC:
     def fit(self,X,y):
         assert y.shape[1] == self.num_choices, "Y should be array with width num_choices"
         for i in range(self.num_choices):
-            self._impl[i].fit(X,y[:,i])
+            _X = X
+            _y = y[:,i]
+            idxs = np.logical_not(np.isnan(_y))
+            _y = _y[idxs]
+            _X = _X[idxs]
+            self._impl[i].fit(_X,_y)
