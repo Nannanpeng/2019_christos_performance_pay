@@ -39,6 +39,7 @@ def _safe_run_set(X,k, model_str, V_tp1, y_f, y_u, start_idx):
     logger.debug('received start index %d' % start_idx)
     with ProcessPoolExecutor(max_workers=2) as executor:
         args_training = [(x, model_str, V_tp1, k) for x in X[start_idx:]]
+        idx = start_idx
         try:
             results = executor.map(_run_one,args_training)
             for idx, (y_f_i, y_u_i) in enumerate(results,start=start_idx):
@@ -47,7 +48,7 @@ def _safe_run_set(X,k, model_str, V_tp1, y_f, y_u, start_idx):
                 y_u[idx,k] = y_u_i
         except BrokenProcessPool as e:
             idx += 1 # exceptions raised before idx incremented
-            logger.debug('Broken process - Failed index: %d' % idx)
+            logger.info('Broken process - Failed index: %d' % idx)
             y_f[idx,k] = np.nan
             y_u[idx,k] = np.nan
 

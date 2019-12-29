@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # PLOTTING CONFIG
     sns.set(context='paper',style="darkgrid",rc=plot_style)
     V_T = None
-    with open('./out/DC_Simple_2019.12.25_20.34.55/value_20.pcl', 'rb') as fd:
+    with open('./out/DC_Simple_2019.12.28_23.37.56/value_20.pcl', 'rb') as fd:
         V_T = pickle.load(fd)
 
     # SETUP

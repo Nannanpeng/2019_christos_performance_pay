@@ -60,7 +60,7 @@ def fit_model(run_config):
     V_tp1, V_t = None, None
 
     # Value Function Iteration
-    for i in range(parameters.T,parameters.T-5,-1):
+    for i in range(parameters.T,0,-1):
         # import pdb; pdb.set_trace()
         V_tp1 = V_t
         logger.info("Value Function Iteration -- Step %d" % i)

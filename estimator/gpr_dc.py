@@ -5,7 +5,7 @@ from sklearn.gaussian_process.kernels import RBF, WhiteKernel, Matern
 class GPR_DC:
 
     def __init__(self,num_choices,n_restarts_optimizer=9):
-        kernel = RBF()
+        kernel = RBF(length_scale=5)
         self.num_choices = num_choices
         self._impl = [GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=9) for i in range(num_choices)]
 
