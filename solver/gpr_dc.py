@@ -3,13 +3,13 @@ import logging
 import signal
 import dill
 logger = logging.getLogger(__name__)
-logger.write = lambda msg: logger.info(msg.decode('utf-8')) if msg.strip() != '' else None
-from utils import stdout_redirector
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
 
+from utils import stdout_redirector, ipopt_stdout_filter
 from . import solver_ipopt as solver
 from estimator.gpr_dc import GPR_DC
+logger.write = lambda msg: ipopt_stdout_filter(msg.decode('utf-8'),logger)
 
 def VFI_iter(model, V_tp1=None, num_samples = 20):
     logger.info("Beginning VFI Step")

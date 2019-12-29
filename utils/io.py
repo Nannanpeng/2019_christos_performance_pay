@@ -13,7 +13,7 @@ from collections import namedtuple
 
 __all__ = [
     'struct_factory', 'yaml_to_spec', 'load_yaml', 'stdout_redirector',
-    'save_model', 'load_model', 'ModelSpec'
+    'save_model', 'load_model', 'ModelSpec', 'ipopt_stdout_filter'
 ]
 
 ModelSpec = namedtuple('ModelSpec',
@@ -88,9 +88,16 @@ def load_yaml(file_path):
             print(exc)
 
 
+def ipopt_stdout_filter(val, _logger):
+    if val.strip() == '':
+        return
+    if '[IPyOpt]' in val:
+        return
+    logger.debug(val)
+
+
 libc = ctypes.CDLL(None)
 c_stdout = ctypes.c_void_p.in_dll(libc, 'stdout')
-
 
 # Source: https://eli.thegreenplace.net/2015/redirecting-all-kinds-of-stdout-in-python/
 @contextmanager
