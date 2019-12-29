@@ -14,7 +14,7 @@ logger.write = lambda msg: ipopt_stdout_filter(msg.decode('utf-8'),logger)
 def VFI_iter(model, V_tp1=None, num_samples = 20):
     logger.info("Beginning VFI Step")
 
-    Xtraining, y_f, y_u = _run_iters(model,num_samples, V_tp1)
+    Xtraining, y_f, y_u = _evaluate_vf(model,num_samples, V_tp1)
 
     # Instantiate a Gaussian Process model
     # Fit to data using Maximum Likelihood Estimation of the parameters
@@ -46,7 +46,8 @@ def _safe_run_set(X,k, model_str, V_tp1, y_f, y_u, start_idx):
                 y_f[idx,k] = y_f_i
                 y_u[idx,k] = y_u_i
         except BrokenProcessPool as e:
-            logger.debug('Broken process - Max index: %d' % idx)
+            idx += 1 # exceptions raised before idx incremented
+            logger.debug('Broken process - Failed index: %d' % idx)
             y_f[idx,k] = np.nan
             y_u[idx,k] = np.nan
 
@@ -60,10 +61,10 @@ def _run_set(X,k, model_str, V_tp1, y_f, y_u):
     logger.debug('Number of samples: %d' % N)
     while start_idx < N:
         end_idx = _safe_run_set(X,k, model_str, V_tp1, y_f, y_u,start_idx)
-        start_idx = end_idx + 2 # end_idx should be last *succesful* solve
+        start_idx = end_idx + 1 # end_idx should be last *succesful* solve
         logger.debug("Max idx: %d" % end_idx)
 
-def _run_iters(model,num_samples, V_tp1):
+def _evaluate_vf(model,num_samples, V_tp1):
     np.random.seed(666)
 
     dim = model.dim.state
@@ -76,5 +77,8 @@ def _run_iters(model,num_samples, V_tp1):
     for k in range(model.num_choices):
         _run_set(X,k,model_str,V_tp1,y_f,y_u)
 
+
+    print(y_f)
+    print(y_u)
     return X, y_f, y_u
 
