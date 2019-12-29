@@ -3,7 +3,8 @@ import logging
 import signal
 import dill
 logger = logging.getLogger(__name__)
-# from pathos.multiprocessing import Pool
+logger.write = lambda msg: logger.info(msg.decode('utf-8')) if msg.strip() != '' else None
+from utils import stdout_redirector
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
 
@@ -29,23 +30,38 @@ def VFI_iter(model, V_tp1=None, num_samples = 20):
 def _run_one(args):
     (x, model_str, V_tp1, k) = args
     model = dill.loads(model_str)
-    # print(model.params)
-    y_f, y_u = solver.solve(model, x, V_tp1 = V_tp1, U_k = k)
+    with stdout_redirector(logger):
+        y_f, y_u = solver.solve(model, x, V_tp1 = V_tp1, U_k = k)
     return y_f, y_u[0]
 
 
-def _run_set(X,k, model_str, V_tp1, y_f, y_u):
+def _safe_run_set(X,k, model_str, V_tp1, y_f, y_u, start_idx):
+    logger.debug('received start index %d' % start_idx)
     with ProcessPoolExecutor(max_workers=2) as executor:
-        args_training = [(x, model_str, V_tp1, k) for x in X]
+        args_training = [(x, model_str, V_tp1, k) for x in X[start_idx:]]
         try:
             results = executor.map(_run_one,args_training)
-            for idx, (y_f_i, y_u_i) in enumerate(results):
-                print('Index: %s. Results: (%.3f,%.3f)' % (idx,y_f_i,y_u_i))
+            for idx, (y_f_i, y_u_i) in enumerate(results,start=start_idx):
+                logger.debug('Index: %s. Results: (%.3f,%.3f)' % (idx,y_f_i,y_u_i))
                 y_f[idx,k] = y_f_i
                 y_u[idx,k] = y_u_i
         except BrokenProcessPool as e:
-            print('Broken process')
-            print(e)
+            logger.debug('Broken process - Max index: %d' % idx)
+            y_f[idx,k] = np.nan
+            y_u[idx,k] = np.nan
+
+        logger.debug("Final idx: %s" % idx)
+
+        return idx
+
+def _run_set(X,k, model_str, V_tp1, y_f, y_u):
+    N = X.shape[0]
+    start_idx = 0
+    logger.debug('Number of samples: %d' % N)
+    while start_idx < N:
+        end_idx = _safe_run_set(X,k, model_str, V_tp1, y_f, y_u,start_idx)
+        start_idx = end_idx + 2 # end_idx should be last *succesful* solve
+        logger.debug("Max idx: %d" % end_idx)
 
 def _run_iters(model,num_samples, V_tp1):
     np.random.seed(666)
@@ -59,8 +75,6 @@ def _run_iters(model,num_samples, V_tp1):
     model_str = dill.dumps(model) # dill can correctly serialize model parameters
     for k in range(model.num_choices):
         _run_set(X,k,model_str,V_tp1,y_f,y_u)
-
-    print(y_f)
 
     return X, y_f, y_u
 
