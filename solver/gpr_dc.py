@@ -5,7 +5,7 @@ import dill
 logger = logging.getLogger(__name__)
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
-from sklearn.gaussian_process.kernels import RBF, DotProduct, ExpSineSquared
+from sklearn.gaussian_process.kernels import RBF, DotProduct, ExpSineSquared, WhiteKernel
 
 from utils import stdout_redirector, ipopt_stdout_filter
 from . import solver_ipopt as solver
@@ -22,17 +22,13 @@ def VFI_iter(model, V_tp1=None, num_samples=20):
     # Fit to data using Maximum Likelihood Estimation of the parameters
     V_t = GPR_DC(model.num_choices,
                  kernel=[
-                     DotProduct() + RBF(length_scale_bounds=(1, 100000.0)) +
-                     ExpSineSquared(length_scale_bounds=(1, 100000.0),
-                                    periodicity_bounds=(20, 100000.0))
+                     DotProduct() * RBF(length_scale_bounds=(100, 100000.0)) + WhiteKernel()
                      for i in range(model.num_choices)
                  ],
                  n_restarts_optimizer=20)
     P_t = GPR_DC(model.num_choices,
                  kernel=[
-                     DotProduct() + RBF(length_scale_bounds=(1, 100000.0)) +
-                     ExpSineSquared(length_scale_bounds=(1, 100000.0),
-                                    periodicity_bounds=(20, 100000.0))
+                     DotProduct() * RBF(length_scale_bounds=(100, 100000.0)) + WhiteKernel()
                      for i in range(model.num_choices)
                  ],
                  n_restarts_optimizer=20)
