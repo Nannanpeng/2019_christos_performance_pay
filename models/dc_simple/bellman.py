@@ -1,6 +1,6 @@
 from collections import namedtuple
 import numpy as np
-from scipy.misc import logsumexp
+from scipy.special import logsumexp
 
 from . import dynamics
 from . import utils

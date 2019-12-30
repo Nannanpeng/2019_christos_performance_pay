@@ -60,6 +60,6 @@ def solve(model, X, **kwargs):
                                mult_g=constraint_multipliers,
                                mult_x_L=z_l,
                                mult_x_U=z_u)
-    logger.info("Ipopt status: %s" % status)
+    logger.info("[X: %s] Ipopt status: %s" % (str(X),status))
 
     return obj, u

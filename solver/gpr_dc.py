@@ -5,9 +5,9 @@ import dill
 logger = logging.getLogger(__name__)
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
-from sklearn.gaussian_process.kernels import RBF, DotProduct, ExpSineSquared, WhiteKernel
+import sklearn.gaussian_process.kernels as kr
 
-from utils import stdout_redirector, ipopt_stdout_filter
+from utils import stdout_redirector, ipopt_stdout_filter, stderr_redirector
 from . import solver_ipopt as solver
 from estimator.gpr_dc import GPR_DC
 logger.write = lambda msg: ipopt_stdout_filter(msg.decode('utf-8'), logger)
@@ -20,15 +20,16 @@ def VFI_iter(model, V_tp1=None, num_samples=20):
 
     # Instantiate a Gaussian Process model
     # Fit to data using Maximum Likelihood Estimation of the parameters
+    rqa = {'length_scale_bounds': (10, 1e5), 'alpha_bounds': (1e-5, 10)}
     V_t = GPR_DC(model.num_choices,
                  kernel=[
-                     DotProduct() * RBF(length_scale_bounds=(100, 100000.0)) + WhiteKernel()
+                     kr.RationalQuadratic(**rqa) + kr.DotProduct()
                      for i in range(model.num_choices)
                  ],
                  n_restarts_optimizer=20)
     P_t = GPR_DC(model.num_choices,
                  kernel=[
-                     DotProduct() * RBF(length_scale_bounds=(100, 100000.0)) + WhiteKernel()
+                     kr.RationalQuadratic(**rqa) + kr.DotProduct()
                      for i in range(model.num_choices)
                  ],
                  n_restarts_optimizer=20)
@@ -43,7 +44,7 @@ def VFI_iter(model, V_tp1=None, num_samples=20):
 def _run_one(args):
     (x, model_str, V_tp1, k) = args
     model = dill.loads(model_str)
-    with stdout_redirector(logger):
+    with stdout_redirector(logger), stderr_redirector(logger):
         y_f, y_u = solver.solve(model, x, V_tp1=V_tp1, U_k=k)
     return y_f, y_u[0]
 
@@ -52,7 +53,7 @@ def _safe_run_set(X, k, model_str, V_tp1, y_f, y_u, start_idx):
     logger.debug('received start index %d' % start_idx)
     with ProcessPoolExecutor(max_workers=2) as executor:
         args_training = [(x, model_str, V_tp1, k) for x in X[start_idx:]]
-        idx = start_idx
+        idx = start_idx - 1 # decrement in case first iteration fails
         try:
             results = executor.map(_run_one, args_training)
             for idx, (y_f_i, y_u_i) in enumerate(results, start=start_idx):
@@ -86,11 +87,12 @@ def _evaluate_vf(model, num_samples, V_tp1):
 
     dim = model.dim.state
     # Sample on log-scale and on uniform to get good coverage
-    X1 = np.random.uniform(np.log(model.params.k_bar), np.log(model.params.k_up),
-                          (num_samples // 2, dim))
+    X1 = np.random.uniform(np.log(model.params.k_bar),
+                           np.log(model.params.k_up), (num_samples // 2, dim))
     X2 = np.random.uniform(model.params.k_bar, model.params.k_up,
-                        (num_samples // 2, dim))
-    X = np.concatenate((np.exp(X1),X2))
+                           ((num_samples // 2) - 1, dim))
+    X3 = np.array([[0.99*model.params.k_up]]) # add top of range to sample points
+    X = np.concatenate((np.exp(X1), X2, X3))
     y_f = np.zeros((num_samples, model.num_choices),
                    float)  # training targets, value function
     y_u = np.zeros((num_samples, model.num_choices),
