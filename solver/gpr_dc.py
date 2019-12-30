@@ -25,7 +25,7 @@ def VFI_iter(model, V_tp1=None, num_samples = 20):
 
     logger.info("Finished VFI Step")
 
-    return V_t, P_t
+    return V_t, P_t, Xtraining, y_f, y_u
 
 def _run_one(args):
     (x, model_str, V_tp1, k) = args
