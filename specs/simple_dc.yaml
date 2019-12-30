@@ -13,7 +13,7 @@ parameters:
     value: 1.10
   k_bar: 
     kind: float
-    value: 0.01
+    value: 1
   k_up: 
     kind: float
     value: 500

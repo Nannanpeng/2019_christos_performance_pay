@@ -11,7 +11,8 @@ import argparse
 import pickle
 from glob import glob
 from estimator.gpr_dc import GPR_DC
-from sklearn.gaussian_process.kernels import RBF, DotProduct, ExpSineSquared
+# from sklearn.gaussian_process.kernels import RBF, DotProduct, ExpSineSquared, WhiteKernel, RationalQuadratic
+import sklearn.gaussian_process.kernels as k
 
 # local
 plot_style = {
@@ -42,15 +43,17 @@ def load_and_fit(directory, t):
     y_f = load_values(load_fstr % (directory, 'y_f', t))
     # kernels = [RBF(length_scale=1) for i in range(2)]
     # kernels = [DotProduct() + RBF() + ExpSineSquared() for i in range(2)]
-    kernels = [
-        DotProduct() + RBF(length_scale_bounds=(1, 100000.0)) +
-        ExpSineSquared(length_scale_bounds=(1, 100000.0),
-                       periodicity_bounds=(20, 100000.0)) for i in range(2)
-    ]
+    # kernels = [
+    #     DotProduct() * RBF(length_scale_bounds=(10, 100000.0)) +
+    #     DotProduct() * RBF(length_scale_bounds=(10, 100000.0)) +
+    #     WhiteKernel() for i in range(2)
+    # ]
+    # kernels = [k.RBF() + k.DotProduct() + k.WhiteKernel() for i in range(2)]
+    kernels = [k.RationalQuadratic() * k.DotProduct() for i in range(2)]
 
     V_t = GPR_DC(2, kernel=kernels, n_restarts_optimizer=20)
-    V_t.fit(X, y_f)
-    return X, y_f, V_t
+    V_t.fit(X, y_u)
+    return X, y_u, V_t
 
 
 def plot_vals(X, Y):
@@ -72,7 +75,7 @@ def plot_function(V_T):
 if __name__ == '__main__':
     sns.set(context='paper', style="darkgrid", rc=plot_style)
 
-    X, y, V_T = load_and_fit('DC_Simple_2019.12.30_14.14.02', 20)
+    X, y, V_T = load_and_fit('DC_Simple_2019.12.30_16.03.05', 19)
     plot_vals(X[:, 0], y[:, 0])
     plot_function(V_T)
     plt.show()
