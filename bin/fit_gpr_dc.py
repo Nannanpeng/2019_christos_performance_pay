@@ -56,12 +56,13 @@ def fit_model(run_config):
     model = DCSimple(parameters)
 
     v_fstr = '%s/value_%%d.pcl' % (run_config['odir'])
+    v_plot_fstr = '%s/value_%%d.pdf' % (run_config['odir'])
     p_fstr = '%s/policy_%%d.pcl' % (run_config['odir'])
     vals_fstr = '%s/%%s_%%d.pcl' % (run_config['odir'])
     V_tp1, V_t = None, None
 
     # Value Function Iteration
-    for i in range(parameters.T,parameters.T -1,-1):
+    for i in range(parameters.T,0,-1):
         # import pdb; pdb.set_trace()
         V_tp1 = V_t
         logger.info("Value Function Iteration -- Step %d" % i)
@@ -71,6 +72,7 @@ def fit_model(run_config):
         utils.save_model(X, vals_fstr % ('X',i))
         utils.save_model(y_u, vals_fstr % ('y_u',i))
         utils.save_model(y_f, vals_fstr % ('y_f',i))
+        utils.plot.create_1D(V_t,0,500,'Assets','Value', v_plot_fstr % i)
 
     logger.info(_ITER_LOG_STR % run_config['max_updates'])
 
