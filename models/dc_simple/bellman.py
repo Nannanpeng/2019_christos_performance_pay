@@ -16,8 +16,7 @@ def state_action_value(X_t, U_t, U_k, params, V_tp1, *args):
     if U_k == 0:
         W_tp1 =  V_tp1(X_tp1.reshape(-1,1),k=0)[0]
     else:
-        V = V_tp1(X_tp1.reshape(-1,1))
-
+        V = V_tp1(X_tp1.reshape(-1,1)).reshape(-1,) # need 1D array
         # W_tp1 = params.sigma_e * np.log(sum(np.exp(V / params.sigma_e)))
         W_tp1 = params.sigma_e * logsumexp(V / params.sigma_e)
 

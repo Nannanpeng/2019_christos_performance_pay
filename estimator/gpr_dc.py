@@ -29,7 +29,6 @@ class GPR_DC:
             return self._impl[k].predict(X,**kwargs)
 
         res = self._all_preds(X,k,**kwargs)
-        res = res.reshape(-1,) # reshape to make sure 1D array
         return res
 
     def fit(self,X,y):
