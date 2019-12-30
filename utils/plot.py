@@ -18,7 +18,18 @@ plot_style = {
     'text.usetex': True
 }
 
-def create_1D(V, xmin, xmax,ylabel,xlabel,plot_out):
+def plot_vals(X, Y, xlabel, ylabel):
+    Y = np.amax(Y,axis=1).reshape(-1,)
+    X = X.reshape(-1,)
+    data = {}
+    data[xlabel] = X
+    data[ylabel] = Y
+
+    # Create DataFrame
+    df = pd.DataFrame(data)
+    ax = sns.scatterplot(x=xlabel, y=ylabel, data=df)
+
+def plot_function(V,xmin,xmax,xlabel,ylabel):
     X = np.linspace(xmin, xmax, num=200)
     Y = V(X.reshape(-1, 1), maximum=True)
     data = {}
@@ -26,5 +37,9 @@ def create_1D(V, xmin, xmax,ylabel,xlabel,plot_out):
     data[ylabel] = Y
     df = pd.DataFrame(data)
     ax = sns.lineplot(x=xlabel, y=ylabel, data=df)
+
+def create_1D(V, X_train, Y_train, xmin, xmax,xlabel,ylabel,plot_out):
+    plot_function(V,xmin,xmax,xlabel,ylabel)
+    plot_vals(X_train,Y_train,xlabel,ylabel)
     plt.savefig(plot_out)
     plt.close()

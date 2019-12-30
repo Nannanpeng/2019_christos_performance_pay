@@ -72,7 +72,7 @@ def fit_model(run_config):
         utils.save_model(X, vals_fstr % ('X',i))
         utils.save_model(y_u, vals_fstr % ('y_u',i))
         utils.save_model(y_f, vals_fstr % ('y_f',i))
-        utils.plot.create_1D(V_t,0,500,'Assets','Value', v_plot_fstr % i)
+        utils.plot.create_1D(V_t,X,y_f,0,500,'Assets','Value', v_plot_fstr % i)
 
     logger.info(_ITER_LOG_STR % run_config['max_updates'])
 
