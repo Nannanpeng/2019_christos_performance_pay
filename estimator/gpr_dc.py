@@ -40,3 +40,9 @@ class GPR_DC:
             _y = _y[idxs]
             _X = _X[idxs]
             self._impl[i].fit(_X,_y)
+
+    def __str__(self):
+        fstr = '\tDC%d: %s'
+        strs = [fstr % (i,str(self._impl[i].kernel_)) for i in range(self.num_choices)]
+        strs = '\r\n'.join(strs)
+        return 'GPR_DC(%d):\r\n%s' % (self.num_choices,strs)
