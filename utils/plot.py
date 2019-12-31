@@ -46,6 +46,7 @@ def plot_function(V,xmin,xmax,xlabel,ylabel,which,maximum):
     ax = sns.lineplot(x=xlabel, y=ylabel, data=df)
 
 def create_1D(V, X_train, Y_train, xmin, xmax,xlabel,ylabel,plot_out,which=None,maximum=False):
+    sns.set(context='paper', style="darkgrid", rc=plot_style)
     assert not (which is None and not maximum), "must specify either which index or to take maximum"
     plot_function(V,xmin,xmax,xlabel,ylabel,which,maximum)
     plot_vals(X_train,Y_train,xlabel,ylabel,which,maximum)
