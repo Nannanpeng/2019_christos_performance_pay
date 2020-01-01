@@ -26,6 +26,6 @@ Currently dynamics specification from `[Name].yaml` is not supported. The simpli
 
 # Miscellaneous
 
-## Warnings
+## IPOPT Solver
 
-*Random state is not managed properly*: complete runs are deterministic, but if you want to resume from a checkpoint, one would need the random state at the time the checkpoint was saved. Currently we don't save that information.
+The return codes for IPOPT solve status are described [here](https://github.com/coin-or/Ipopt/blob/master/src/Interfaces/IpReturnCodes_inc.h).
