@@ -4,7 +4,7 @@ parameters:
   # Taste shock variance
   sigma_e:
     kind: float
-    value: 0.05
+    value: 0.01
   beta:
     kind: float
     value: 0.8    

@@ -1,7 +1,40 @@
 import numpy as np
+import logging
+logger = logging.getLogger(__name__)
 import torch
 import gpytorch
 import collections
+
+
+class ExactGPModel(gpytorch.models.ExactGP):
+    def __init__(self, train_x, train_y, likelihood):
+        super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
+        self.mean_module = gpytorch.means.ConstantMean()
+        self.covar_module = gpytorch.kernels.ScaleKernel(
+            gpytorch.kernels.RBFKernel())
+
+    def forward(self, x):
+        mean_x = self.mean_module(x)
+        covar_x = self.covar_module(x)
+        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+
+
+class SpectralMixtureGPModel(gpytorch.models.ExactGP):
+    def __init__(self, train_x, train_y, likelihood):
+        super(SpectralMixtureGPModel, self).__init__(train_x, train_y,
+                                                     likelihood)
+        self.mean_module = gpytorch.means.ConstantMean()
+        self.covar_module = gpytorch.kernels.SpectralMixtureKernel(
+            num_mixtures=4)
+        self.covar_module.initialize_from_data(train_x, train_y)
+
+    def forward(self, x):
+        mean_x = self.mean_module(x)
+        covar_x = self.covar_module(x)
+        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+
+
+GPR_TYPE = SpectralMixtureGPModel
 
 
 class GPR_DC:
@@ -12,8 +45,8 @@ class GPR_DC:
         gpr._data = val['data']
         for i in range(gpr.num_choices):
             likelihood = gpytorch.likelihoods.GaussianLikelihood()
-            gpr._impl[i] = ExactGPModel(self._data[i][0], self._data[i][1],
-                                        likelihood)
+            gpr._impl[i] = GPR_TYPE(self._data[i][0], self._data[i][1],
+                                    likelihood)
         return gpr
 
     @staticmethod
@@ -22,8 +55,8 @@ class GPR_DC:
         gpr._data = val['data']
         for i in range(gpr.num_choices):
             likelihood = gpytorch.likelihoods.GaussianLikelihood()
-            gpr._impl[i] = ExactGPModel(gpr._data[i][0], gpr._data[i][1],
-                                        likelihood)
+            gpr._impl[i] = GPR_TYPE(gpr._data[i][0], gpr._data[i][1],
+                                    likelihood)
             gpr._impl[i].load_state_dict(val['models'][i])
         gpr.eval()
         return gpr
@@ -75,7 +108,7 @@ class GPR_DC:
         res = self._all_preds(X, **kwargs)
         return res
 
-    def fit(self, X, y):
+    def fit(self, X, y, **kwargs):
         assert y.shape[
             1] == self.num_choices, "Y should be array with width num_choices"
         for i in range(self.num_choices):
@@ -85,21 +118,21 @@ class GPR_DC:
             idxs = np.logical_not(np.isnan(_y))
             _y = torch.tensor(_y[idxs])
             _X = torch.tensor(_X[idxs])
-            self._impl[i] = ExactGPModel(_X, _y, likelihood)
-            self._data[i] = (_X,_y)
-            _fit_gpr(self._impl[i], likelihood, _X, _y)
+            self._impl[i] = GPR_TYPE(_X, _y, likelihood)
+            self._data[i] = (_X, _y)
+            _fit_gpr(self._impl[i], likelihood, _X, _y,**kwargs)
 
     def __str__(self):
         fstr = '\tDC%d: %s'
         strs = [
-            fstr % (i, str(self._impl[i]))
-            for i in range(self.num_choices)
+            fstr % (i, str(self._impl[i])) for i in range(self.num_choices)
         ]
         strs = '\r\n'.join(strs)
         return 'GPR_DC(%d):\r\n%s' % (self.num_choices, strs)
 
 
-def _fit_gpr(model, likelihood, X, y, training_iter=1500):
+def _fit_gpr(model, likelihood, X, y, max_iter=1500, lr=1, debug_log_interval=50):
+    logger.info('Fiting GPR (max_iter: %d, lr: %.4f)' % (max_iter, lr))
     model.train()
     likelihood.train()
 
@@ -110,12 +143,12 @@ def _fit_gpr(model, likelihood, X, y, training_iter=1500):
                 'params': model.parameters()
             },  # Includes GaussianLikelihood parameters
         ],
-        lr=1)
+        lr=lr)
 
     # "Loss" for GPs - the marginal log likelihood
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 
-    for i in range(training_iter):
+    for i in range(max_iter):
         # Zero gradients from previous iteration
         optimizer.zero_grad()
         # Output from model
@@ -123,21 +156,15 @@ def _fit_gpr(model, likelihood, X, y, training_iter=1500):
         # Calc loss and backprop gradients
         loss = -mll(output, y)
         loss.backward()
-        if i % 50 == 0:
-            print('Iter %d/%d - Loss: %.3f   lengthscale: %.3f   noise: %.3f' %
-                  (i + 1, training_iter, loss.item(),
-                   model.covar_module.base_kernel.lengthscale.item(),
-                   model.likelihood.noise.item()))
+
+        # Log Progress
+        log_str = '%%s Iter %d/%d - Loss: %.3f   noise: %.3f' % (
+            i, max_iter, loss.item(), model.likelihood.noise.item())
+        if i == 0:
+            logger.info(log_str % '[START TRAIN]')
+        elif i == (max_iter - 1):
+            logger.info(log_str % '[START TRAIN]')
+        elif i % debug_log_interval == 0:
+            logger.debug(log_str % '[TRAINING]')
+
         optimizer.step()
-
-class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood):
-        super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
-        self.mean_module = gpytorch.means.ConstantMean()
-        self.covar_module = gpytorch.kernels.ScaleKernel(
-            gpytorch.kernels.RBFKernel())
-
-    def forward(self, x):
-        mean_x = self.mean_module(x)
-        covar_x = self.covar_module(x)
-        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
