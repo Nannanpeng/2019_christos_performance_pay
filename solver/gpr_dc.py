@@ -2,7 +2,8 @@ import numpy as np
 import logging
 import signal
 import torch.multiprocessing as mp
-torch_mp_ctx = mp.get_context("spawn")
+# if context is 'fork', mp hangs when passing pytorch model
+torch_mp_ctx = mp.get_context("spawn") 
 import dill
 logger = logging.getLogger(__name__)
 from concurrent.futures import ProcessPoolExecutor

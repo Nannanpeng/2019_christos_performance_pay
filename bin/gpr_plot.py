@@ -61,8 +61,8 @@ def plot_value(directory, t):
 
 if __name__ == '__main__':
     sns.set(context='paper', style="darkgrid", rc=up.plot_style)
-    directory = 'DC_Simple_2020.01.01_21.32.03'
-    t = 20
+    directory = 'DC_Simple_2020.01.02_00.45.16'
+    t = 19
     fig = plt.figure()
     figManager = plt.get_current_fig_manager()
     # Plot Value Function
@@ -74,11 +74,11 @@ if __name__ == '__main__':
     # Plot Policy Worker
     ax = plt.subplot(2, 2, 3)
     ax.set_title('Policy for Worker')
-    plot_policy(X,y,V,0)
+    plot_policy(X,y,V,1)
     # Plot Policy Retired
     ax = plt.subplot(2, 2, 4)
     ax.set_title('Policy for Retiree')
-    plot_policy(X,y,V,1)
+    plot_policy(X,y,V,0)
 
     # display plot
     fig.tight_layout()
