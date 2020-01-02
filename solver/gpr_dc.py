@@ -44,24 +44,26 @@ def VFI_iter(model, V_tp1=None, num_samples=20):
 def _run_one(args):
     (x, model_str, V_tp1, k) = args
     model = dill.loads(model_str)
-    with stdout_redirector(logger), stderr_redirector(logger):
-        y_f, y_u = solver.solve(model, x, V_tp1=V_tp1, U_k=k)
+    # with stdout_redirector(logger), stderr_redirector(logger):
+    y_f, y_u = solver.solve(model, x, V_tp1=V_tp1, U_k=k)
     return y_f, y_u[0]
 
 
 def _safe_run_set(X, k, model_str, V_tp1, y_f, y_u, start_idx):
     logger.debug('received start index %d' % start_idx)
-    with ProcessPoolExecutor(max_workers=2) as executor:
+    with ProcessPoolExecutor(max_workers=1) as executor:
         args_training = [(x, model_str, V_tp1, k) for x in X[start_idx:]]
         idx = start_idx - 1 # decrement in case first iteration fails
         try:
-            results = executor.map(_run_one, args_training)
+            # results = executor.map(_run_one, args_training)
+            results = map(_run_one, args_training)
             for idx, (y_f_i, y_u_i) in enumerate(results, start=start_idx):
                 logger.debug('Index: %s. Results: (%.3f,%.3f)' %
                              (idx, y_f_i, y_u_i))
                 y_f[idx, k] = y_f_i
                 y_u[idx, k] = y_u_i
         except BrokenProcessPool as e:
+            print(e)
             idx += 1  # exceptions raised before idx incremented
             logger.info('Broken process - Failed index: %d' % idx)
             y_f[idx, k] = np.nan

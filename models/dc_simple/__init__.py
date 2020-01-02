@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 import scipy.optimize as opt
 
 from solver import IPOptCallback
@@ -15,15 +16,19 @@ class DCSimple:
     # state-action value function
     def value(self, X, U, U_k = None, V_tp1=None, **kwargs):
         assert U_k is not None, "Must specify discrete action"
+        X, U, U_k = torch.tensor(X), torch.tensor(U), torch.tensor(U_k)
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
-        return bellman.state_action_value(X, U, U_k, self.params, V_tp1)
+        res = bellman.state_action_value(X, U, U_k, self.params, V_tp1)
+        # return scalar if single X val, else ndarray
+        return res.numpy()[0] if len(res) == 1 else res.numpy()
 
     def value_deriv(self, X, U, U_k = None, V_tp1=None, **kwargs):
         assert U_k is not None, "Must specify discrete action"
+        X, U, U_k = torch.tensor(X), torch.tensor(U, requires_grad = True), torch.tensor(U_k)
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
-        F = lambda U: bellman.state_action_value(X, U, U_k, self.params, V_tp1)
-        res = opt.approx_fprime(U,F,1e-8)
-        return res
+        V = bellman.state_action_value(X, U, U_k, self.params, V_tp1)
+        V.backward()
+        return U.grad.numpy()
 
     @property
     def value_hess_sparsity(self):

@@ -1,5 +1,5 @@
 import numpy as np
-
+import torch
 from . import utils
 
 def transition(X_t, U_t, U_k, params=None):
@@ -19,8 +19,7 @@ def EV_G(X_t, U, params,constraint=None):
 
 
 def utility(U_t, U_k, params=None):
-    util = np.log(U_t) - U_k
-    
+    util = torch.log(U_t) - U_k
     return util
 
 
