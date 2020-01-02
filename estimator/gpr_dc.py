@@ -131,8 +131,8 @@ class GPR_DC:
         return 'GPR_DC(%d):\r\n%s' % (self.num_choices, strs)
 
 
-def _fit_gpr(model, likelihood, X, y, max_iter=1500, lr=1, debug_log_interval=50):
-    logger.info('Fiting GPR (max_iter: %d, lr: %.4f)' % (max_iter, lr))
+def _fit_gpr(model, likelihood, X, y, num_iter=1500, lr=1, debug_log_interval=50):
+    logger.info('Fiting GPR (num_iter: %d, lr: %.4f)' % (num_iter, lr))
     model.train()
     likelihood.train()
 
@@ -148,7 +148,7 @@ def _fit_gpr(model, likelihood, X, y, max_iter=1500, lr=1, debug_log_interval=50
     # "Loss" for GPs - the marginal log likelihood
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 
-    for i in range(max_iter):
+    for i in range(num_iter):
         # Zero gradients from previous iteration
         optimizer.zero_grad()
         # Output from model
@@ -159,10 +159,10 @@ def _fit_gpr(model, likelihood, X, y, max_iter=1500, lr=1, debug_log_interval=50
 
         # Log Progress
         log_str = '%%s Iter %d/%d - Loss: %.3f   noise: %.3f' % (
-            i, max_iter, loss.item(), model.likelihood.noise.item())
+            i, num_iter, loss.item(), model.likelihood.noise.item())
         if i == 0:
             logger.info(log_str % '[START TRAIN]')
-        elif i == (max_iter - 1):
+        elif i == (num_iter - 1):
             logger.info(log_str % '[START TRAIN]')
         elif i % debug_log_interval == 0:
             logger.debug(log_str % '[TRAINING]')
