@@ -20,8 +20,9 @@ def load_and_fit(directory, t, xname, yname, kernels):
     X = load_values(load_fstr % (directory, xname, t))
     y = load_values(load_fstr % (directory, yname, t))
 
-    V_t = GPR_DC(2, kernel=kernels, n_restarts_optimizer=20)
+    V_t = GPR_DC(2)
     V_t.fit(X, y)
+    V_t.eval()
     return X, y, V_t
 
 def load_fit_policy(directory,t):
@@ -60,8 +61,8 @@ def plot_value(directory, t):
 
 if __name__ == '__main__':
     sns.set(context='paper', style="darkgrid", rc=up.plot_style)
-    directory = 'DC_Simple_2019.12.30_18.46.14'
-    t = 19
+    directory = 'DC_Simple_2020.01.01_21.32.03'
+    t = 20
     fig = plt.figure()
     figManager = plt.get_current_fig_manager()
     # Plot Value Function
