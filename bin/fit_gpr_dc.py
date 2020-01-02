@@ -38,7 +38,7 @@ def configure_run(run_config):
     else:
         logging.basicConfig(level=log_level)
 
-    # TODO: Fix this for numba -- I don't think it will seed correctly as is
+    # TODO: Check seeding with numpy, torch -- I don't think it will seed correctly as is
     if run_config['seed'] is not None:
         random.seed(run_config['seed'])
 
