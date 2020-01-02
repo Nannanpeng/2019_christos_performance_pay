@@ -39,9 +39,9 @@ def _run_one(args):
     V_tp1 = dill.loads(V_tp1_str)
 
     with stdout_redirector(logger), stderr_redirector(logger):
-        y_f, y_u = solver.solve(model, x, V_tp1=V_tp1, U_k=k)
+        y_f, y_u, status = solver.solve(model, x, V_tp1=V_tp1, U_k=k)
 
-    return y_f, y_u[0]
+    return x, y_f, y_u[0], status
 
 
 def _safe_run_set(X, k, model_str, V_tp1, y_f, y_u, start_idx):
@@ -51,9 +51,10 @@ def _safe_run_set(X, k, model_str, V_tp1, y_f, y_u, start_idx):
         idx = start_idx - 1 # decrement in case first iteration fails
         try:
             results = executor.map(_run_one, args_training)
-            for idx, (y_f_i, y_u_i) in enumerate(results, start=start_idx):
+            for idx, (x, y_f_i, y_u_i, status_i) in enumerate(results, start=start_idx):
                 logger.debug('Index: %s. Results: (%.3f,%.3f)' %
                              (idx, y_f_i, y_u_i))
+                logger.info("[X: %s] Ipopt status: %s" % (str(x),status_i))
                 y_f[idx, k] = y_f_i
                 y_u[idx, k] = y_u_i
         except BrokenProcessPool as e:

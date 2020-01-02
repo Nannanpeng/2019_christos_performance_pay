@@ -99,7 +99,7 @@ class GPR_DC:
         return 'GPR_DC(%d):\r\n%s' % (self.num_choices, strs)
 
 
-def _fit_gpr(model, likelihood, X, y, training_iter=2000):
+def _fit_gpr(model, likelihood, X, y, training_iter=8000):
     model.train()
     likelihood.train()
 
@@ -110,7 +110,7 @@ def _fit_gpr(model, likelihood, X, y, training_iter=2000):
                 'params': model.parameters()
             },  # Includes GaussianLikelihood parameters
         ],
-        lr=10)
+        lr=0.1)
 
     # "Loss" for GPs - the marginal log likelihood
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
