@@ -1,4 +1,7 @@
+# import matplotlib and suppress logs
 import matplotlib.pyplot as plt
+import logging
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
 import pandas as pd
 import numpy as np
 import seaborn as sns
