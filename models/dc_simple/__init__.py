@@ -20,7 +20,7 @@ class DCSimple:
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
         res = bellman.state_action_value(X, U, U_k, self.params, V_tp1)
         # return scalar if single X val, else ndarray
-        return res.numpy()[0] if len(res) == 1 else res.numpy()
+        return res.detach().numpy()[0] if len(res) == 1 else res.detach().numpy()
 
     def value_deriv(self, X, U, U_k = None, V_tp1=None, **kwargs):
         assert U_k is not None, "Must specify discrete action"
@@ -28,6 +28,7 @@ class DCSimple:
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
         V = bellman.state_action_value(X, U, U_k, self.params, V_tp1)
         V.backward()
+
         return U.grad.numpy()
 
     @property

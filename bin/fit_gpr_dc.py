@@ -68,11 +68,11 @@ def fit_model(run_config):
         V_tp1 = V_t
         logger.info("Value Function Iteration -- Step %d" % i)
         V_t, P_t, X, y_f, y_u = VFI_iter(model, V_tp1, num_samples=algorithm_config.No_samples)
-        utils.save_model(V_t, v_fstr % i)
-        utils.save_model(P_t, p_fstr % i)
-        utils.save_model(X, vals_fstr % ('X',i))
-        utils.save_model(y_u, vals_fstr % ('y_u',i))
-        utils.save_model(y_f, vals_fstr % ('y_f',i))
+        V_t.save(v_fstr % i)
+        P_t.save(p_fstr % i)
+        utils.save_value(X, vals_fstr % ('X',i))
+        utils.save_value(y_u, vals_fstr % ('y_u',i))
+        utils.save_value(y_f, vals_fstr % ('y_f',i))
         utils.plot.create_1D(V_t,X,y_f,0,500,'Assets','Value', v_plot_fstr % i,maximum=True)
         utils.plot.create_1D(P_t,X,y_u,0,500,'Assets','Consumption', p_plot_fstr % i,which=0)
 

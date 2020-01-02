@@ -37,6 +37,8 @@ def VFI_iter(model, V_tp1=None, num_samples=20):
     P_t = GPR_DC(model.num_choices)
     V_t.fit(Xtraining, y_f)
     P_t.fit(Xtraining, y_u)
+    V_t.eval()
+    P_t.eval()
 
     logger.info("Finished VFI Step")
 

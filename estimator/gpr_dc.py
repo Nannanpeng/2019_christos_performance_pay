@@ -5,6 +5,16 @@ import collections
 
 class GPR_DC:
 
+    @classmethod
+    def from_saved(path):
+        val = torch.load(PATH)
+        gpr = GPR_DC(val['num_choices'])
+        gpr._data = val['data']
+        for i in range(gpr.num_choices):
+            likelihood = gpytorch.likelihoods.GaussianLikelihood()
+            gpr._impl[i] = ExactGPModel(self._data[i][0],self._data[i][1],likelihood)
+        return gpr
+
     def __init__(self,num_choices,**kwargs):
         # kernel = kernel if kernel is not None else [RBF(length_scale=1) for i in range(num_choices)]
         # if not isinstance(kernel,collections.Sized):
@@ -13,21 +23,36 @@ class GPR_DC:
             # raise RuntimeError('Incorrect length of kernels provided')
         self.num_choices = num_choices
         self._impl = [None] * self.num_choices
+        self._data = [None] * self.num_choices
 
-    def _all_preds(self,X,k,**kwargs):
-        preds = [self._impl[k](X,**kwargs).view(-1,1) for k in range(self.num_choices)]
-        import pdb; pdb.set_trace()
-        preds = np.hstack(preds)
+    def save(self,path):
+        val = {
+            'models': [m.state_dict() for m in self._impl],
+            'num_choices': self.num_choices,
+            'data': self._data
+        }
+        torch.save(val, path)
+
+    def eval(self):
+        for i in range(self.num_choices):
+            self._impl[i].eval()
+
+    def _all_preds(self,X,**kwargs):
+        preds = []
+        preds = [self._impl[k](X,**kwargs).mean.unsqueeze(-1) for k in range(self.num_choices)]
+        preds = torch.cat(preds,-1)
         return preds
 
     def __call__(self,X,k=None,maximum=False,**kwargs):
+        X = torch.tensor(X) if not isinstance(X,torch.Tensor) else X
         if maximum:
-            all_preds = self._all_preds(X,k,**kwargs)
-            return torch.max(all_preds,axis=1).reshape(-1,)
+            all_preds = self._all_preds(X,**kwargs)
+            max_preds = torch.max(all_preds,-1).values
+            return max_preds
         if k is not None:
-            return self._impl[k](X,**kwargs)
+            return self._impl[k](X,**kwargs).mean
 
-        res = self._all_preds(X,k,**kwargs)
+        res = self._all_preds(X,**kwargs)
         return res
 
     def fit(self,X,y):

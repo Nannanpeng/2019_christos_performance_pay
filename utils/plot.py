@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import seaborn as sns
+import torch
 
 # local
 plot_style = {
@@ -39,6 +40,7 @@ def plot_function(V,xmin,xmax,xlabel,ylabel,which,maximum):
         Y = V(X.reshape(-1, 1), maximum=True)
     else:
         Y = V(X.reshape(-1, 1))[:,which]
+    Y = Y if not isinstance(Y,torch.Tensor) else Y.detach().numpy()
     data = {}
     data[xlabel] = X
     data[ylabel] = Y
