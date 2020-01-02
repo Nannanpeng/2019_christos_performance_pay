@@ -1,32 +1,31 @@
 import numpy as np
-import copy
+import torch
+import gpytorch
 import collections
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, WhiteKernel, Matern
 
 class GPR_DC:
 
-    def __init__(self,num_choices,n_restarts_optimizer=9,kernel=None):
-        kernel = kernel if kernel is not None else [RBF(length_scale=1) for i in range(num_choices)]
-        if not isinstance(kernel,collections.Sized):
-            kernel = [copy.deepcopy(kernel) for i in range(num_choices)]
-        if len(kernel) != num_choices:
-            raise RuntimeError('Incorrect length of kernels provided')
-
+    def __init__(self,num_choices,**kwargs):
+        # kernel = kernel if kernel is not None else [RBF(length_scale=1) for i in range(num_choices)]
+        # if not isinstance(kernel,collections.Sized):
+            # kernel = [copy.deepcopy(kernel) for i in range(num_choices)]
+        # if len(kernel) != num_choices:
+            # raise RuntimeError('Incorrect length of kernels provided')
         self.num_choices = num_choices
-        self._impl = [GaussianProcessRegressor(kernel=kernel[i], n_restarts_optimizer=9) for i in range(num_choices)]
+        self._impl = [None] * self.num_choices
 
     def _all_preds(self,X,k,**kwargs):
-        preds = [self._impl[k].predict(X,**kwargs).reshape(-1,1) for k in range(self.num_choices)]
+        preds = [self._impl[k](X,**kwargs).view(-1,1) for k in range(self.num_choices)]
+        import pdb; pdb.set_trace()
         preds = np.hstack(preds)
         return preds
 
     def __call__(self,X,k=None,maximum=False,**kwargs):
         if maximum:
             all_preds = self._all_preds(X,k,**kwargs)
-            return np.amax(all_preds,axis=1).reshape(-1,)
+            return torch.max(all_preds,axis=1).reshape(-1,)
         if k is not None:
-            return self._impl[k].predict(X,**kwargs)
+            return self._impl[k](X,**kwargs)
 
         res = self._all_preds(X,k,**kwargs)
         return res
@@ -36,13 +35,55 @@ class GPR_DC:
         for i in range(self.num_choices):
             _X = X
             _y = y[:,i]
+            likelihood = gpytorch.likelihoods.GaussianLikelihood()
             idxs = np.logical_not(np.isnan(_y))
-            _y = _y[idxs]
-            _X = _X[idxs]
-            self._impl[i].fit(_X,_y)
+            _y = torch.tensor(_y[idxs])
+            _X = torch.tensor(_X[idxs])
+            self._impl[i] = ExactGPModel(_X,_y,likelihood)
+            _fit_gpr(self._impl[i],likelihood,_X,_y)
 
     def __str__(self):
         fstr = '\tDC%d: %s'
         strs = [fstr % (i,str(self._impl[i].kernel_)) for i in range(self.num_choices)]
         strs = '\r\n'.join(strs)
         return 'GPR_DC(%d):\r\n%s' % (self.num_choices,strs)
+
+
+def _fit_gpr(model,likelihood,X,y,training_iter=50):
+    model.train()
+    likelihood.train()
+
+    # Use the adam optimizer
+    optimizer = torch.optim.Adam([
+        {'params': model.parameters()},  # Includes GaussianLikelihood parameters
+    ], lr=0.1)
+
+    # "Loss" for GPs - the marginal log likelihood
+    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+
+    for i in range(training_iter):
+        # Zero gradients from previous iteration
+        optimizer.zero_grad()
+        # Output from model
+        output = model(X)
+        # Calc loss and backprop gradients
+        loss = -mll(output, y)
+        loss.backward()
+        print('Iter %d/%d - Loss: %.3f   lengthscale: %.3f   noise: %.3f' % (
+            i + 1, training_iter, loss.item(),
+            model.covar_module.base_kernel.lengthscale.item(),
+            model.likelihood.noise.item()
+        ))
+        optimizer.step()
+
+class ExactGPModel(gpytorch.models.ExactGP):
+    def __init__(self, train_x, train_y, likelihood):
+        super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
+        self.mean_module = gpytorch.means.ConstantMean()
+        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+
+    def forward(self, x):
+        mean_x = self.mean_module(x)
+        covar_x = self.covar_module(x)
+        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+    

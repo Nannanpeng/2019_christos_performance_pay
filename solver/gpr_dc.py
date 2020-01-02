@@ -21,18 +21,20 @@ def VFI_iter(model, V_tp1=None, num_samples=20):
     # Instantiate a Gaussian Process model
     # Fit to data using Maximum Likelihood Estimation of the parameters
     rqa = {'length_scale_bounds': (10, 1e5), 'alpha_bounds': (1e-5, 10)}
-    V_t = GPR_DC(model.num_choices,
-                 kernel=[
-                     kr.RationalQuadratic(**rqa)
-                     for i in range(model.num_choices)
-                 ],
-                 n_restarts_optimizer=20)
-    P_t = GPR_DC(model.num_choices,
-                 kernel=[
-                     kr.RationalQuadratic(**rqa)
-                     for i in range(model.num_choices)
-                 ],
-                 n_restarts_optimizer=20)
+    # V_t = GPR_DC(model.num_choices,
+    #              kernel=[
+    #                  kr.RationalQuadratic(**rqa)
+    #                  for i in range(model.num_choices)
+    #              ],
+    #              n_restarts_optimizer=20)
+    # P_t = GPR_DC(model.num_choices,
+    #              kernel=[
+    #                  kr.RationalQuadratic(**rqa)
+    #                  for i in range(model.num_choices)
+    #              ],
+    #              n_restarts_optimizer=20)
+    V_t = GPR_DC(model.num_choices)
+    P_t = GPR_DC(model.num_choices)
     V_t.fit(Xtraining, y_f)
     P_t.fit(Xtraining, y_u)
 
