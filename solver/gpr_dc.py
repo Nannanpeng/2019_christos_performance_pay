@@ -21,20 +21,6 @@ def VFI_iter(model, V_tp1=None, num_samples=20):
     Xtraining, y_f, y_u = _evaluate_vf(model, num_samples, V_tp1)
 
     # Instantiate a Gaussian Process model
-    # Fit to data using Maximum Likelihood Estimation of the parameters
-    rqa = {'length_scale_bounds': (10, 1e5), 'alpha_bounds': (1e-5, 10)}
-    # V_t = GPR_DC(model.num_choices,
-    #              kernel=[
-    #                  kr.RationalQuadratic(**rqa)
-    #                  for i in range(model.num_choices)
-    #              ],
-    #              n_restarts_optimizer=20)
-    # P_t = GPR_DC(model.num_choices,
-    #              kernel=[
-    #                  kr.RationalQuadratic(**rqa)
-    #                  for i in range(model.num_choices)
-    #              ],
-    #              n_restarts_optimizer=20)
     V_t = GPR_DC(model.num_choices)
     P_t = GPR_DC(model.num_choices)
     V_t.fit(Xtraining, y_f)
@@ -42,23 +28,18 @@ def VFI_iter(model, V_tp1=None, num_samples=20):
     V_t.eval()
     P_t.eval()
 
-
     logger.info("Finished VFI Step")
 
     return V_t, P_t, Xtraining, y_f, y_u
 
 
 def _run_one(args):
-    (x, model_str, V_tp1_state, k) = args
-    print('starting run')
+    (x, model_str, V_tp1_str, k) = args
     model = dill.loads(model_str)
+    V_tp1 = dill.loads(V_tp1_str)
 
-    V_tp1 = GPR_DC.from_state(V_tp1_state) if V_tp1_state is not None else None
-    print('loaded model')
-
-    # with stdout_redirector(logger), stderr_redirector(logger):
-    y_f, y_u = solver.solve(model, x, V_tp1=V_tp1, U_k=k)
-    print('finished solve')
+    with stdout_redirector(logger), stderr_redirector(logger):
+        y_f, y_u = solver.solve(model, x, V_tp1=V_tp1, U_k=k)
 
     return y_f, y_u[0]
 
@@ -70,7 +51,6 @@ def _safe_run_set(X, k, model_str, V_tp1, y_f, y_u, start_idx):
         idx = start_idx - 1 # decrement in case first iteration fails
         try:
             results = executor.map(_run_one, args_training)
-            # results = map(_run_one, args_training)
             for idx, (y_f_i, y_u_i) in enumerate(results, start=start_idx):
                 logger.debug('Index: %s. Results: (%.3f,%.3f)' %
                              (idx, y_f_i, y_u_i))
@@ -113,11 +93,9 @@ def _evaluate_vf(model, num_samples, V_tp1):
     y_u = np.zeros((num_samples, model.num_choices),
                    float)  # training targets, policy
 
-    model_str = dill.dumps(
-        model)  # dill can correctly serialize model parameters
-    V_tp1_state = V_tp1.state_dict() if V_tp1 is not None else None
-    # import pdb;pdb.set_trace()
+    # dill can correctly serialize model parameters
+    model_str = dill.dumps(model)  
+    V_tp1_str = dill.dumps(V_tp1)
     for k in range(model.num_choices):
-        _run_set(X, k, model_str, V_tp1_state, y_f, y_u)
-
+        _run_set(X, k, model_str, V_tp1_str, y_f, y_u)
     return X, y_f, y_u
