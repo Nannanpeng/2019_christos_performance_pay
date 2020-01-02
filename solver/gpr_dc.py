@@ -67,7 +67,6 @@ def _safe_run_set(X, k, model_str, V_tp1, y_f, y_u, start_idx):
                 y_f[idx, k] = y_f_i
                 y_u[idx, k] = y_u_i
         except BrokenProcessPool as e:
-            print(e)
             idx += 1  # exceptions raised before idx incremented
             logger.info('Broken process - Failed index: %d' % idx)
             y_f[idx, k] = np.nan
