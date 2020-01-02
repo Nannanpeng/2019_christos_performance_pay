@@ -1,6 +1,8 @@
 import numpy as np
 import logging
 import signal
+import torch.multiprocessing as mp
+torch_mp_ctx = mp.get_context("spawn")
 import dill
 logger = logging.getLogger(__name__)
 from concurrent.futures import ProcessPoolExecutor
@@ -40,27 +42,35 @@ def VFI_iter(model, V_tp1=None, num_samples=20):
     V_t.eval()
     P_t.eval()
 
+
     logger.info("Finished VFI Step")
 
     return V_t, P_t, Xtraining, y_f, y_u
 
 
 def _run_one(args):
-    (x, model_str, V_tp1, k) = args
+    (x, model_str, V_tp1_state, k) = args
+    print('starting run')
     model = dill.loads(model_str)
+
+    V_tp1 = GPR_DC.from_state(V_tp1_state) if V_tp1_state is not None else None
+    print('loaded model')
+
     # with stdout_redirector(logger), stderr_redirector(logger):
     y_f, y_u = solver.solve(model, x, V_tp1=V_tp1, U_k=k)
+    print('finished solve')
+
     return y_f, y_u[0]
 
 
 def _safe_run_set(X, k, model_str, V_tp1, y_f, y_u, start_idx):
     logger.debug('received start index %d' % start_idx)
-    with ProcessPoolExecutor(max_workers=1) as executor:
+    with ProcessPoolExecutor(max_workers=1,mp_context=torch_mp_ctx) as executor:
         args_training = [(x, model_str, V_tp1, k) for x in X[start_idx:]]
         idx = start_idx - 1 # decrement in case first iteration fails
         try:
-            # results = executor.map(_run_one, args_training)
-            results = map(_run_one, args_training)
+            results = executor.map(_run_one, args_training)
+            # results = map(_run_one, args_training)
             for idx, (y_f_i, y_u_i) in enumerate(results, start=start_idx):
                 logger.debug('Index: %s. Results: (%.3f,%.3f)' %
                              (idx, y_f_i, y_u_i))
@@ -105,7 +115,9 @@ def _evaluate_vf(model, num_samples, V_tp1):
 
     model_str = dill.dumps(
         model)  # dill can correctly serialize model parameters
+    V_tp1_state = V_tp1.state_dict() if V_tp1 is not None else None
+    # import pdb;pdb.set_trace()
     for k in range(model.num_choices):
-        _run_set(X, k, model_str, V_tp1, y_f, y_u)
+        _run_set(X, k, model_str, V_tp1_state, y_f, y_u)
 
     return X, y_f, y_u

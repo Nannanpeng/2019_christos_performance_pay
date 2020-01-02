@@ -5,7 +5,7 @@ import collections
 
 
 class GPR_DC:
-    @classmethod
+    @staticmethod
     def from_saved(path):
         val = torch.load(PATH)
         gpr = GPR_DC(val['num_choices'])
@@ -14,6 +14,18 @@ class GPR_DC:
             likelihood = gpytorch.likelihoods.GaussianLikelihood()
             gpr._impl[i] = ExactGPModel(self._data[i][0], self._data[i][1],
                                         likelihood)
+        return gpr
+
+    @staticmethod
+    def from_state(val):
+        gpr = GPR_DC(val['num_choices'])
+        gpr._data = val['data']
+        for i in range(gpr.num_choices):
+            likelihood = gpytorch.likelihoods.GaussianLikelihood()
+            gpr._impl[i] = ExactGPModel(gpr._data[i][0], gpr._data[i][1],
+                                        likelihood)
+            gpr._impl[i].load_state_dict(val['models'][i])
+        gpr.eval()
         return gpr
 
     def __init__(self, num_choices, **kwargs):
@@ -27,12 +39,16 @@ class GPR_DC:
         self._data = [None] * self.num_choices
 
     def save(self, path):
+        val = self.state_dict()
+        torch.save(val, path)
+
+    def state_dict(self):
         val = {
             'models': [m.state_dict() for m in self._impl],
             'num_choices': self.num_choices,
             'data': self._data
         }
-        torch.save(val, path)
+        return val
 
     def eval(self):
         for i in range(self.num_choices):
@@ -70,6 +86,7 @@ class GPR_DC:
             _y = torch.tensor(_y[idxs])
             _X = torch.tensor(_X[idxs])
             self._impl[i] = ExactGPModel(_X, _y, likelihood)
+            self._data[i] = (_X,_y)
             _fit_gpr(self._impl[i], likelihood, _X, _y)
 
     def __str__(self):
@@ -82,7 +99,7 @@ class GPR_DC:
         return 'GPR_DC(%d):\r\n%s' % (self.num_choices, strs)
 
 
-def _fit_gpr(model, likelihood, X, y, training_iter=2000):
+def _fit_gpr(model, likelihood, X, y, training_iter=100):
     model.train()
     likelihood.train()
 

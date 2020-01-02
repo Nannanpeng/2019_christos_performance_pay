@@ -15,11 +15,14 @@ class DCSimple:
 
     # state-action value function
     def value(self, X, U, U_k = None, V_tp1=None, **kwargs):
+        print('evaluating value function')
         assert U_k is not None, "Must specify discrete action"
         X, U, U_k = torch.tensor(X), torch.tensor(U), torch.tensor(U_k)
         V_tp1 = bellman.V_T if V_tp1 is None else V_tp1
+        print('partially evaled')
         res = bellman.state_action_value(X, U, U_k, self.params, V_tp1)
         # return scalar if single X val, else ndarray
+        print('finished eval vf')
         return res.detach().numpy()[0] if len(res) == 1 else res.detach().numpy()
 
     def value_deriv(self, X, U, U_k = None, V_tp1=None, **kwargs):
