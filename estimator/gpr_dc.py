@@ -64,11 +64,6 @@ class GPR_DC:
         return gpr
 
     def __init__(self, num_choices, **kwargs):
-        # kernel = kernel if kernel is not None else [RBF(length_scale=1) for i in range(num_choices)]
-        # if not isinstance(kernel,collections.Sized):
-        # kernel = [copy.deepcopy(kernel) for i in range(num_choices)]
-        # if len(kernel) != num_choices:
-        # raise RuntimeError('Incorrect length of kernels provided')
         self.num_choices = num_choices
         self._impl = [None] * self.num_choices
         self._data = [None] * self.num_choices
@@ -120,10 +115,6 @@ class GPR_DC:
             idxs = np.logical_not(np.isnan(_y))
             _y = torch.tensor(_y[idxs])
             _X = torch.tensor(_X[idxs])
-            # self._impl[i] = GPR_TYPE(_X, _y, likelihood)
-            # self._data[i] = (_X, _y)
-            # _fit_gpr(self._impl[i], likelihood, _X, _y,**kwargs)
-
             self._data[i] = (_X, _y)
             self._impl[i] = _fit_gpr(GPR_TYPE, likelihood, _X, _y,**kwargs)
 
@@ -137,7 +128,7 @@ class GPR_DC:
         return 'GPR_DC(%d):\r\n%s' % (self.num_choices, strs)
 
 
-def _fit_gpr(GPR_TYPE, likelihood, X, y, num_iter=100, lr=1, debug_log_interval=5, num_restarts = 10):
+def _fit_gpr(GPR_TYPE, likelihood, X, y, num_iter=100, lr=1, debug_log_interval=5, num_restarts = 20):
     logger.info('Fiting GPR (num_iter: %d, num_restarts: %d)' % (num_iter, num_restarts))
     min_loss = 0.0
     min_model = None
@@ -168,7 +159,6 @@ def _run_fit_gpr(model, likelihood, X, y, num_iter, debug_log_interval):
         output = model(X)
         # Calc loss and backprop gradients
         loss = -mll(output, y)
-        # loss.backward()
         return loss
 
     loss = closure()
