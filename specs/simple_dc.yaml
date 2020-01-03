@@ -35,4 +35,4 @@ parameters:
 algorithmConfig:
   No_samples:
     kind: int
-    value: 300
+    value: 100

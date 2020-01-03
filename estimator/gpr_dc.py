@@ -128,7 +128,7 @@ class GPR_DC:
         return 'GPR_DC(%d):\r\n%s' % (self.num_choices, strs)
 
 
-def _fit_gpr(GPR_TYPE, likelihood, X, y, num_iter=100, lr=1, debug_log_interval=5, num_restarts = 20):
+def _fit_gpr(GPR_TYPE, likelihood, X, y, num_iter=50, lr=1, debug_log_interval=5, num_restarts = 20):
     logger.info('Fiting GPR (num_iter: %d, num_restarts: %d)' % (num_iter, num_restarts))
     min_loss = 0.0
     min_model = None

@@ -40,7 +40,11 @@ def plot_argparser():
                         type=float,
                         default=500.0,
                         help="Upper end of value range to use")
-
+    parser.add_argument("-r",
+                        "--restarts",
+                        type=int,
+                        default=10,
+                        help="Number of restarts")
     parser.add_argument("-d", "--debug", action="store_true", help="debug")
     parser.add_argument("-p",
                         "--policy",
@@ -80,7 +84,7 @@ def load_and_fit(directory, t, xname, yname, lb, ub, kernels=None, **kwargs):
     return X, y, V_t
 
 
-def load_fit_policy(directory, t, num_iter, lr, lb, ub):
+def load_fit_policy(directory, t, num_iter, lr, lb, ub, restarts):
     rqa = {'length_scale_bounds': (10, 1e5), 'alpha_bounds': (1e-5, 10)}
     rqa = {'length_scale_bounds': (10, 1e5), 'alpha_bounds': (1e-5, 10)}
     essa = {'length_scale_bounds': (1, 1e5), 'periodicity_bounds': (10, 1e5)}
@@ -97,6 +101,7 @@ def load_fit_policy(directory, t, num_iter, lr, lb, ub):
                            lb,
                            ub,
                            kernels,
+                           num_restarts=restarts,
                            num_iter=num_iter,
                            lr=lr)
     logger.debug('Policy Model:\r\n %s' % str(V))
@@ -108,7 +113,7 @@ def plot_policy(X, y, V, dc, lb, ub):
     up.plot_vals(X, y, 'Assets', 'Consumption', dc, False)
 
 
-def plot_value(directory, t, num_iter, lr, lb, ub):
+def plot_value(directory, t, num_iter, lr, lb, ub, restarts):
     kernels = [
         kr.RationalQuadratic(**rqa)
         # + kr.DotProduct()
@@ -122,6 +127,7 @@ def plot_value(directory, t, num_iter, lr, lb, ub):
                            lb,
                            ub,
                            kernels,
+                           num_restarts=restarts,
                            num_iter=num_iter,
                            lr=lr)
     logger.debug('Value Func. Model:\r\n %s' % str(V))
@@ -159,12 +165,13 @@ if __name__ == '__main__':
         ax = plt.subplot(2, 2, 1)
         ax.set_title('Value Function')
         plot_value(directory, t, args.max_iter, args.learning_rate, args.lb,
-                   args.ub)
+                   args.ub, args.restarts)
 
     if make_policy:
         logger.info('Fitting Policy Function')
         X, y, V = load_fit_policy(directory, t, args.max_iter,
-                                  args.learning_rate, args.lb, args.ub)
+                                  args.learning_rate, args.lb, args.ub,
+                                  args.restarts)
 
         # Plot Policy Worker
         ax = plt.subplot(2, 2, 3)
