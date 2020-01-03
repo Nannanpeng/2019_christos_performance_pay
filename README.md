@@ -29,3 +29,7 @@ Currently dynamics specification from `[Name].yaml` is not supported. The simpli
 ## IPOPT Solver
 
 The return codes for IPOPT solve status are described [here](https://github.com/coin-or/Ipopt/blob/master/src/Interfaces/IpReturnCodes_inc.h).
+
+## Pytorch-LBFGS
+
+We use the implementation found [here](https://github.com/hjmshi/PyTorch-LBFGS) and vendored under `third_party`.

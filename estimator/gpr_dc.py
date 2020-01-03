@@ -2,9 +2,11 @@ import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 import torch
+import copy
 import gpytorch
 import collections
 
+import third_party.hjmshi.lbfgs as opt_tp
 
 class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood):
@@ -118,9 +120,13 @@ class GPR_DC:
             idxs = np.logical_not(np.isnan(_y))
             _y = torch.tensor(_y[idxs])
             _X = torch.tensor(_X[idxs])
-            self._impl[i] = GPR_TYPE(_X, _y, likelihood)
+            # self._impl[i] = GPR_TYPE(_X, _y, likelihood)
+            # self._data[i] = (_X, _y)
+            # _fit_gpr(self._impl[i], likelihood, _X, _y,**kwargs)
+
             self._data[i] = (_X, _y)
-            _fit_gpr(self._impl[i], likelihood, _X, _y,**kwargs)
+            self._impl[i] = _fit_gpr(GPR_TYPE, likelihood, _X, _y,**kwargs)
+
 
     def __str__(self):
         fstr = '\tDC%d: %s'
@@ -131,40 +137,54 @@ class GPR_DC:
         return 'GPR_DC(%d):\r\n%s' % (self.num_choices, strs)
 
 
-def _fit_gpr(model, likelihood, X, y, num_iter=1500, lr=1, debug_log_interval=50):
-    logger.info('Fiting GPR (num_iter: %d, lr: %.4f)' % (num_iter, lr))
+def _fit_gpr(GPR_TYPE, likelihood, X, y, num_iter=100, lr=1, debug_log_interval=5, num_restarts = 10):
+    logger.info('Fiting GPR (num_iter: %d, num_restarts: %d)' % (num_iter, num_restarts))
+    min_loss = 0.0
+    min_model = None
+    for i in range(num_restarts):
+        new_model = GPR_TYPE(X,y,likelihood)
+        loss_i = _run_fit_gpr(new_model,likelihood, X, y, num_iter,debug_log_interval)
+        if loss_i < min_loss or min_model is None:
+            logger.debug('Found new best loss: %.3f' % loss_i)
+            min_model = new_model
+        else:
+            logger.debug('Did not find new best loss')
+    return min_model
+
+def _run_fit_gpr(model, likelihood, X, y, num_iter, debug_log_interval):
     model.train()
     likelihood.train()
 
     # Use the adam optimizer
-    optimizer = torch.optim.Adam(
-        [
-            {
-                'params': model.parameters()
-            },  # Includes GaussianLikelihood parameters
-        ],
-        lr=lr)
+    optimizer = opt_tp.FullBatchLBFGS(model.parameters())
 
     # "Loss" for GPs - the marginal log likelihood
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 
-    for i in range(num_iter):
+    def closure():
         # Zero gradients from previous iteration
         optimizer.zero_grad()
         # Output from model
         output = model(X)
         # Calc loss and backprop gradients
         loss = -mll(output, y)
-        loss.backward()
+        # loss.backward()
+        return loss
 
+    loss = closure()
+    loss.backward()
+
+    for i in range(num_iter):
+        options = {'closure': closure, 'current_loss': loss, 'max_ls': 10}
+        loss, _, lr, _, _, _, _, _ = optimizer.step(options)
         # Log Progress
-        log_str = '%%s Iter %d/%d - Loss: %.3f   noise: %.3f' % (
-            i, num_iter, loss.item(), model.likelihood.noise.item())
+        log_str = '%%s Iter %d/%d - Loss: %.3f | Noise: %.3f | LR: %.3f  ' % (
+            i, num_iter, loss.item(), model.likelihood.noise.item(), lr)
         if i == 0:
-            logger.info(log_str % '[START TRAIN]')
+            logger.debug(log_str % '[START TRAIN]')
         elif i == (num_iter - 1):
-            logger.info(log_str % '[START TRAIN]')
+            logger.debug(log_str % '[START TRAIN]')
         elif i % debug_log_interval == 0:
             logger.debug(log_str % '[TRAINING]')
 
-        optimizer.step()
+    return loss.item()
