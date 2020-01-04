@@ -55,6 +55,8 @@ class GPR_DC:
     def from_state(val):
         gpr = GPR_DC(val['num_choices'])
         gpr._data = val['data']
+        gpr._xnorm = val['xnorm']
+        gpr._ynorm = val['ynorm']
         for i in range(gpr.num_choices):
             likelihood = gpytorch.likelihoods.GaussianLikelihood()
             gpr._impl[i] = GPR_TYPE(gpr._data[i][0], gpr._data[i][1],
@@ -67,6 +69,8 @@ class GPR_DC:
         self.num_choices = num_choices
         self._impl = [None] * self.num_choices
         self._data = [None] * self.num_choices
+        self._xnorm = [None,None]
+        self._ynorm = ([None] * self.num_choices,[None] * self.num_choices)
 
     def save(self, path):
         val = self.state_dict()
@@ -76,7 +80,9 @@ class GPR_DC:
         val = {
             'models': [m.state_dict() for m in self._impl],
             'num_choices': self.num_choices,
-            'data': self._data
+            'data': self._data,
+            'xnorm': self._xnorm,
+            'ynorm': self._ynorm,
         }
         return val
 
@@ -90,17 +96,20 @@ class GPR_DC:
             self._impl[k](X, **kwargs).mean.unsqueeze(-1)
             for k in range(self.num_choices)
         ]
-        preds = torch.cat(preds, -1)
-        return preds
+        preds_scaled = [self._ynorm[1][k]*p + self._ynorm[0][k] for k,p in enumerate(preds)]
+        preds_scaled = torch.cat(preds_scaled, -1)
+        return preds_scaled
 
     def __call__(self, X, k=None, maximum=False, **kwargs):
         X = torch.tensor(X) if not isinstance(X, torch.Tensor) else X
+        X = (X - self._xnorm[0]) / self._xnorm[1]
         if maximum:
             all_preds = self._all_preds(X, **kwargs)
             max_preds = torch.max(all_preds, -1).values
             return max_preds
         if k is not None:
-            return self._impl[k](X, **kwargs).mean
+            res = self._impl[k](X, **kwargs).mean
+            return self._ynorm[1][k]*res + self._ynorm[0][k]
 
         res = self._all_preds(X, **kwargs)
         return res
@@ -108,16 +117,22 @@ class GPR_DC:
     def fit(self, X, y, **kwargs):
         assert y.shape[
             1] == self.num_choices, "Y should be array with width num_choices"
+        X = torch.tensor(X)
+        self._xnorm[0] = X.mean(dim=0)
+        self._xnorm[1] = X.std(dim=0)
+        X = (X - self._xnorm[0]) / self._xnorm[1]
         for i in range(self.num_choices):
             _X = X
             _y = y[:, i]
             likelihood = gpytorch.likelihoods.GaussianLikelihood()
             idxs = np.logical_not(np.isnan(_y))
             _y = torch.tensor(_y[idxs])
-            _X = torch.tensor(_X[idxs])
+            self._ynorm[0][i] = _y.mean(dim=0)
+            self._ynorm[1][i] = _y.std(dim=0)
+            _X = _X[idxs]
+            _y = (_y - self._ynorm[0][i]) / self._ynorm[1][i]
             self._data[i] = (_X, _y)
             self._impl[i] = _fit_gpr(GPR_TYPE, likelihood, _X, _y,**kwargs)
-
 
     def __str__(self):
         fstr = '\tDC%d: %s'
