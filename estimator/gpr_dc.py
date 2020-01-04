@@ -36,11 +36,13 @@ class SpectralMixtureGPModel(gpytorch.models.ExactGP):
     def _initialize(self):
         cmsd = self.covar_module.state_dict()
         init_sd = {
-            'covar_module.raw_mixture_means': torch.empty(cmsd['raw_mixture_means'].shape).normal_(),
-            'covar_module.raw_mixture_scales': torch.empty(cmsd['raw_mixture_scales'].shape).normal_()
+            'covar_module.raw_mixture_means':
+            torch.empty(cmsd['raw_mixture_means'].shape).normal_(),
+            'covar_module.raw_mixture_scales':
+            torch.empty(cmsd['raw_mixture_scales'].shape).normal_()
         }
         init_sd = collections.OrderedDict(init_sd)
-        self.load_state_dict(init_sd,strict=False)
+        self.load_state_dict(init_sd, strict=False)
 
     def covariance_state_string(self):
         log_str = """
@@ -67,36 +69,43 @@ class GPR_DC:
     @staticmethod
     def from_saved(path):
         val = torch.load(PATH)
-        gpr = GPR_DC(val['num_choices'])
+        gpr = GPR_DC(val['num_choices'],
+                     noise_lower_bound=val['noise_lower_bound'])
         gpr._data = val['data']
         gpr._xnorm = val['xnorm']
         gpr._ynorm = val['ynorm']
         for i in range(gpr.num_choices):
-            likelihood = gpytorch.likelihoods.GaussianLikelihood()
+            likelihood = gpytorch.likelihoods.GaussianLikelihood(
+                noise_constraint=gpytorch.constraints.GreaterThan(
+                    gpr.noise_lower_bound))
             gpr._impl[i] = GPR_TYPE(self._data[i][0], self._data[i][1],
                                     likelihood)
         return gpr
 
     @staticmethod
     def from_state(val):
-        gpr = GPR_DC(val['num_choices'])
+        gpr = GPR_DC(val['num_choices'],
+                     noise_lower_bound=val['noise_lower_bound'])
         gpr._data = val['data']
         gpr._xnorm = val['xnorm']
         gpr._ynorm = val['ynorm']
         for i in range(gpr.num_choices):
-            likelihood = gpytorch.likelihoods.GaussianLikelihood()
+            likelihood = gpytorch.likelihoods.GaussianLikelihood(
+                noise_constraint=gpytorch.constraints.GreaterThan(
+                    gpr.noise_lower_bound))
             gpr._impl[i] = GPR_TYPE(gpr._data[i][0], gpr._data[i][1],
                                     likelihood)
             gpr._impl[i].load_state_dict(val['models'][i])
         gpr.eval()
         return gpr
 
-    def __init__(self, num_choices, **kwargs):
+    def __init__(self, num_choices, noise_lower_bound=1e-2, **kwargs):
         self.num_choices = num_choices
         self._impl = [None] * self.num_choices
         self._data = [None] * self.num_choices
         self._xnorm = [None, None]
         self._ynorm = ([None] * self.num_choices, [None] * self.num_choices)
+        self.noise_lower_bound = noise_lower_bound
 
     def save(self, path):
         val = self.state_dict()
@@ -109,6 +118,7 @@ class GPR_DC:
             'data': self._data,
             'xnorm': self._xnorm,
             'ynorm': self._ynorm,
+            'noise_lower_bound': self.noise_lower_bound
         }
         return val
 
@@ -154,7 +164,8 @@ class GPR_DC:
             _X = X
             _y = y[:, i]
             likelihood = gpytorch.likelihoods.GaussianLikelihood(
-                noise_constraint=gpytorch.constraints.GreaterThan(0.1))
+                noise_constraint=gpytorch.constraints.GreaterThan(
+                    self.noise_lower_bound))
             idxs = np.logical_not(np.isnan(_y))
             _y = torch.tensor(_y[idxs])
             self._ynorm[0][i] = _y.mean(dim=0)
