@@ -25,10 +25,11 @@ class SpectralMixtureGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood):
         super(SpectralMixtureGPModel, self).__init__(train_x, train_y,
                                                      likelihood)
-        self.mean_module = gpytorch.means.ConstantMean()
+        # self.mean_module = gpytorch.means.ConstantMean()
+        self.mean_module = gpytorch.means.ZeroMean()
         self.covar_module = gpytorch.kernels.SpectralMixtureKernel(
             num_mixtures=4)
-        self.covar_module.initialize_from_data(train_x, train_y)
+        # self.covar_module.initialize_from_data(train_x, train_y)
 
     def forward(self, x):
         mean_x = self.mean_module(x)
@@ -45,6 +46,8 @@ class GPR_DC:
         val = torch.load(PATH)
         gpr = GPR_DC(val['num_choices'])
         gpr._data = val['data']
+        gpr._xnorm = val['xnorm']
+        gpr._ynorm = val['ynorm']
         for i in range(gpr.num_choices):
             likelihood = gpytorch.likelihoods.GaussianLikelihood()
             gpr._impl[i] = GPR_TYPE(self._data[i][0], self._data[i][1],
@@ -124,7 +127,7 @@ class GPR_DC:
         for i in range(self.num_choices):
             _X = X
             _y = y[:, i]
-            likelihood = gpytorch.likelihoods.GaussianLikelihood()
+            likelihood = gpytorch.likelihoods.GaussianLikelihood(noise_constraint=gpytorch.constraints.GreaterThan(0.1))
             idxs = np.logical_not(np.isnan(_y))
             _y = torch.tensor(_y[idxs])
             self._ynorm[0][i] = _y.mean(dim=0)
@@ -143,7 +146,7 @@ class GPR_DC:
         return 'GPR_DC(%d):\r\n%s' % (self.num_choices, strs)
 
 
-def _fit_gpr(GPR_TYPE, likelihood, X, y, num_iter=50, lr=1, debug_log_interval=5, num_restarts = 20):
+def _fit_gpr(GPR_TYPE, likelihood, X, y, num_iter=1000, lr=1, debug_log_interval=5, num_restarts = 9):
     logger.info('Fiting GPR (num_iter: %d, num_restarts: %d)' % (num_iter, num_restarts))
     min_loss = 0.0
     min_model = None
@@ -160,6 +163,8 @@ def _fit_gpr(GPR_TYPE, likelihood, X, y, num_iter=50, lr=1, debug_log_interval=5
 def _run_fit_gpr(model, likelihood, X, y, num_iter, debug_log_interval):
     model.train()
     likelihood.train()
+    eps = 1e-4
+    h = 100
 
     # Use the adam optimizer
     optimizer = opt_tp.FullBatchLBFGS(model.parameters())
@@ -178,18 +183,27 @@ def _run_fit_gpr(model, likelihood, X, y, num_iter, debug_log_interval):
 
     loss = closure()
     loss.backward()
-
+    loss_min, loss_min_iter = None, -1
     for i in range(num_iter):
+        # import pdb; pdb.set_trace()
         options = {'closure': closure, 'current_loss': loss, 'max_ls': 10}
         loss, _, lr, _, _, _, _, _ = optimizer.step(options)
+        loss_val = loss.item()
         # Log Progress
         log_str = '%%s Iter %d/%d - Loss: %.3f | Noise: %.3f | LR: %.3f  ' % (
-            i, num_iter, loss.item(), model.likelihood.noise.item(), lr)
+            i, num_iter, loss_val, model.likelihood.noise.item(), lr)
         if i == 0:
             logger.debug(log_str % '[START TRAIN]')
         elif i == (num_iter - 1):
-            logger.debug(log_str % '[START TRAIN]')
+            logger.debug(log_str % '[END TRAIN]')
         elif i % debug_log_interval == 0:
             logger.debug(log_str % '[TRAINING]')
+
+        # Early stopping rule
+        if loss_min is None or loss_val < loss_min - eps:
+            loss_min, loss_min_iter = loss_val, i
+        if loss_min_iter < i - h:
+            logger.debug('[EARLY STOP] No decrease in %d iterations' % h)
+            break
 
     return loss.item()
