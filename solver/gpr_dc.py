@@ -84,12 +84,15 @@ def _evaluate_vf(model, num_samples, V_tp1):
 
     dim = model.dim.state
     # Sample on log-scale and on uniform to get good coverage
+    # X1 = np.random.uniform(np.log(model.params.k_bar),
+    #                        np.log(model.params.k_up), (num_samples // 2, dim))
+    # X2 = np.random.uniform(model.params.k_bar, model.params.k_up,
+    #                        ((num_samples // 2) - 1, dim))
     X1 = np.random.uniform(np.log(model.params.k_bar),
-                           np.log(model.params.k_up), (num_samples // 2, dim))
-    X2 = np.random.uniform(model.params.k_bar, model.params.k_up,
-                           ((num_samples // 2) - 1, dim))
+                           np.log(model.params.k_up), (num_samples - 1, dim))
     X3 = np.array([[0.99*model.params.k_up]]) # add top of range to sample points
-    X = np.concatenate((np.exp(X1), X2, X3))
+    # X = np.concatenate((np.exp(X1), X2, X3))
+    X = np.concatenate((np.exp(X1), X3))
     y_f = np.zeros((num_samples, model.num_choices),
                    float)  # training targets, value function
     y_u = np.zeros((num_samples, model.num_choices),
